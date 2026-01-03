@@ -1,5 +1,7 @@
 package com.heartbeat.server.service;
 
+import com.heartbeat.server.net.ClientHandler;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -17,6 +19,9 @@ public class MainServer {
             while (true) {
                 Socket client = serverSocket.accept();
                 System.out.println("Client connected: " + client.getInetAddress());
+
+                ClientHandler handler = new ClientHandler(client);
+                new Thread(handler).start();
             }
 
         } catch (IOException e) {

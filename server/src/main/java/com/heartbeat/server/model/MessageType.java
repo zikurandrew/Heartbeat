@@ -1,4 +1,9 @@
 package com.heartbeat.server.model;
 
-public class MessageType {
+public enum MessageType {
+    CHAT,
+    EMOTION,
+    STATUS,
+    TYPING,
+    SYSTEM
 }
