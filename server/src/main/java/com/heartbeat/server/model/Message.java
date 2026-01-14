@@ -27,6 +27,10 @@ public class Message {
         return sender;
     }
 
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
     public void setFrom(String from) {
         this.sender = from;
     }

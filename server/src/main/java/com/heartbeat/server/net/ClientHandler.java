@@ -59,47 +59,72 @@ public class ClientHandler implements Runnable {
 
                     // ===== PAIRING =====
                     case PAIR -> {
+
                         room = PairManager.join(session);
 
                         if (room != null) {
-                            session.send(new Message(
+
+                            ClientSession a = room.getFirst();
+                            ClientSession b = room.getSecond();
+
+                            Message paired = new Message(
                                     MessageType.SYSTEM,
                                     "server",
                                     "PAIRED"
-                            ));
+                            );
 
-                            String me = session.getUserId();
-                            String other = room.getOtherUser(session);
+                            a.send(paired);
+                            b.send(paired);
 
-                            List<Message> history =
-                                    MessageDAO.loadHistory(me, other);
+                            List<Message> historyA =
+                                    MessageDAO.loadHistory(
+                                            a.getUserId(),
+                                            b.getUserId()
+                                    );
 
-                            for (Message msg : history) {
-                                session.send(msg);
+                            for (Message msg : historyA) {
+                                a.send(msg);
+                            }
+
+                            List<Message> historyB =
+                                    MessageDAO.loadHistory(
+                                            b.getUserId(),
+                                            a.getUserId()
+                                    );
+
+                            for (Message msg : historyB) {
+                                b.send(msg);
                             }
                         }
                     }
+
 
                     // ===== CHAT / EMOJI / SIGNALS =====
                     case CHAT, EMOJI, TYPING, MOOD, PULSE, ATTENTION -> {
 
                         if (room == null) continue;
 
+                        String from = session.getUserId();
                         String to = room.getOtherUser(session);
+
+                        message.setSender(from);
 
                         // зберігаємо тільки CHAT та EMOJI
                         if (message.getType() == MessageType.CHAT ||
                                 message.getType() == MessageType.EMOJI) {
 
                             MessageDAO.save(
-                                    session.getUserId(),
+                                    from,
                                     to,
                                     message
                             );
                         }
 
                         room.relay(session, message);
+
+                        session.send(message);
                     }
+
 
                     // ===== DISCONNECT =====
                     case UNPAIR -> {

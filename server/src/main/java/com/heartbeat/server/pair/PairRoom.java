@@ -46,4 +46,13 @@ public class PairRoom {
     public boolean isActive() {
         return a.isAlive() && b.isAlive();
     }
+
+    public ClientSession getFirst() {
+        return a;
+    }
+
+    public ClientSession getSecond() {
+        return b;
+    }
+
 }
