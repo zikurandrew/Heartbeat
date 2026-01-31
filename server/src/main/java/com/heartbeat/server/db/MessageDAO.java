@@ -1,79 +1,60 @@
 package com.heartbeat.server.db;
 
-import com.heartbeat.server.model.Message;
-import com.heartbeat.server.model.MessageType;
+import com.heartbeat.common.model.Message;
+import com.heartbeat.common.model.MessageType;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MessageDAO {
 
-    /**
-     * Зберігає повідомлення в БД
-     */
-    public static void save(String sender, String receiver, Message message) {
-
-        String sql = """
-            INSERT INTO messages(sender, receiver, type, content)
-            VALUES (?, ?, ?, ?)
-        """;
+    public static void save(String sender, String receiver, Message msg) throws Exception {
 
         try (Connection conn = Database.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(
+                     "INSERT INTO messages(sender, receiver, type, content, timestamp) VALUES (?, ?, ?, ?, ?)")) {
 
             ps.setString(1, sender);
             ps.setString(2, receiver);
-            ps.setString(3, message.getType().name());
-            ps.setString(4, message.getContent());
+            ps.setString(3, msg.getType().name());
+            ps.setString(4, msg.getContent());
+            ps.setLong(5, msg.getTimestamp());
 
             ps.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
-    /**
-     * Завантажує історію між двома користувачами
-     */
-    public static List<Message> loadHistory(String userA, String userB) {
+    public static List<Message> loadHistory(String a, String b) throws Exception {
 
-        List<Message> history = new ArrayList<>();
-
-        String sql = """
-            SELECT sender, type, content
-            FROM messages
-            WHERE (sender = ? AND receiver = ?)
-               OR (sender = ? AND receiver = ?)
-            ORDER BY timestamp ASC
-        """;
+        List<Message> list = new ArrayList<>();
 
         try (Connection conn = Database.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(
+                     """
+                     SELECT * FROM messages
+                     WHERE (sender = ? AND receiver = ?)
+                        OR (sender = ? AND receiver = ?)
+                     ORDER BY timestamp
+                     """
+             )) {
 
-            ps.setString(1, userA);
-            ps.setString(2, userB);
-            ps.setString(3, userB);
-            ps.setString(4, userA);
+            ps.setString(1, a);
+            ps.setString(2, b);
+            ps.setString(3, b);
+            ps.setString(4, a);
 
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                Message msg = new Message(
+                list.add(new Message(
                         MessageType.valueOf(rs.getString("type")),
                         rs.getString("sender"),
                         rs.getString("content")
-                );
-                history.add(msg);
+                ));
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
-        return history;
+        return list;
     }
 }

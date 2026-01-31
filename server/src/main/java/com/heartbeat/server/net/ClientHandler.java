@@ -2,11 +2,10 @@ package com.heartbeat.server.net;
 
 import com.google.gson.Gson;
 import com.heartbeat.server.db.MessageDAO;
+import com.heartbeat.common.model.Message;
+import com.heartbeat.common.model.MessageType;
 import com.heartbeat.server.pair.PairManager;
 import com.heartbeat.server.pair.PairRoom;
-import com.heartbeat.server.model.Message;
-import com.heartbeat.server.model.MessageType;
-import com.heartbeat.server.net.ClientSession;
 
 import java.io.*;
 import java.net.Socket;
@@ -40,16 +39,12 @@ public class ClientHandler implements Runnable {
             while ((line = in.readLine()) != null) {
 
                 Message message = gson.fromJson(line, Message.class);
-                if (message == null || message.getType() == null) {
-                    continue;
-                }
+                if (message == null || message.getType() == null) continue;
 
                 switch (message.getType()) {
 
-                    // ===== LOGIN =====
                     case LOGIN -> {
                         session.setUserId(message.getSender());
-
                         session.send(new Message(
                                 MessageType.SYSTEM,
                                 "server",
@@ -57,76 +52,47 @@ public class ClientHandler implements Runnable {
                         ));
                     }
 
-                    // ===== PAIRING =====
                     case PAIR -> {
-
                         room = PairManager.join(session);
 
                         if (room != null) {
-
-                            ClientSession a = room.getFirst();
-                            ClientSession b = room.getSecond();
-
                             Message paired = new Message(
                                     MessageType.SYSTEM,
                                     "server",
                                     "PAIRED"
                             );
 
-                            a.send(paired);
-                            b.send(paired);
+                            room.broadcast(paired);
 
-                            List<Message> historyA =
-                                    MessageDAO.loadHistory(
-                                            a.getUserId(),
-                                            b.getUserId()
-                                    );
+                            String userA = room.getA().getUserId();
+                            String userB = room.getB().getUserId();
 
-                            for (Message msg : historyA) {
-                                a.send(msg);
-                            }
+                            List<Message> history =
+                                    MessageDAO.loadHistory(userA, userB);
 
-                            List<Message> historyB =
-                                    MessageDAO.loadHistory(
-                                            b.getUserId(),
-                                            a.getUserId()
-                                    );
-
-                            for (Message msg : historyB) {
-                                b.send(msg);
+                            for (Message msg : history) {
+                                room.broadcast(msg);
                             }
                         }
                     }
 
-
-                    // ===== CHAT / EMOJI / SIGNALS =====
-                    case CHAT, EMOJI, TYPING, MOOD, PULSE, ATTENTION -> {
+                    case CHAT, EMOJI -> {
 
                         if (room == null) continue;
 
                         String from = session.getUserId();
                         String to = room.getOtherUser(session);
 
-                        message.setSender(from);
+                        Message fixed = new Message(
+                                message.getType(),
+                                from,
+                                message.getContent()
+                        );
 
-                        // зберігаємо тільки CHAT та EMOJI
-                        if (message.getType() == MessageType.CHAT ||
-                                message.getType() == MessageType.EMOJI) {
-
-                            MessageDAO.save(
-                                    from,
-                                    to,
-                                    message
-                            );
-                        }
-
-                        room.relay(session, message);
-
-                        session.send(message);
+                        MessageDAO.save(from, to, fixed);
+                        room.broadcast(fixed);
                     }
 
-
-                    // ===== DISCONNECT =====
                     case UNPAIR -> {
                         PairManager.leave(session);
                         room = null;
@@ -136,6 +102,9 @@ public class ClientHandler implements Runnable {
 
         } catch (Exception e) {
             System.out.println("Client disconnected");
+        } finally {
+            PairManager.leave(session);
+            if (session != null) session.close();
         }
     }
 }

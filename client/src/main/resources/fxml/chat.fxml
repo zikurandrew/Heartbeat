@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.heartbeat.client.controller.ChatController">
+
+    <center>
+        <TextArea fx:id="chatArea"
+                  editable="false" />
+    </center>
+
+    <bottom>
+        <HBox spacing="5">
+            <TextField fx:id="messageField"
+                       HBox.hgrow="ALWAYS" />
+            <Button text="Send"
+                    onAction="#onSend"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

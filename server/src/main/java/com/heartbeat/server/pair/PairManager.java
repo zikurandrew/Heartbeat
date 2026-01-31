@@ -1,34 +1,29 @@
 package com.heartbeat.server.pair;
 
 import com.heartbeat.server.net.ClientSession;
-import com.heartbeat.server.pair.PairRoom;
 
+import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class PairManager {
 
-    private static final Queue<ClientSession> waiting =
-            new ConcurrentLinkedQueue<>();
+    private static final Queue<ClientSession> waiting = new LinkedList<>();
 
-    /**
-     * Додає користувача в чергу або створює пару
-     */
     public static synchronized PairRoom join(ClientSession session) {
 
-        ClientSession other = waiting.poll();
+        if (waiting.contains(session)) {
+            return null;
+        }
 
-        if (other == null || !other.isAlive()) {
+        if (waiting.isEmpty()) {
             waiting.add(session);
             return null;
         }
 
-        return new PairRoom(session, other);
+        ClientSession other = waiting.poll();
+        return new PairRoom(other, session);
     }
 
-    /**
-     * Видаляє користувача з черги (якщо він вийшов)
-     */
     public static synchronized void leave(ClientSession session) {
         waiting.remove(session);
     }

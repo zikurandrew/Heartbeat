@@ -6,13 +6,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="heartbeat (2)" />
-        <module name="heartbeat (1)" />
+        <module name="common" />
+        <module name="client" />
+        <module name="server" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="heartbeat" target="17" />
-      <module name="server" target="17" />
-    </bytecodeTargetLevel>
   </component>
 </project>
