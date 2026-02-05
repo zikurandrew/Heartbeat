@@ -6,9 +6,9 @@ import com.heartbeat.common.model.Message;
 import com.heartbeat.common.model.MessageType;
 import com.heartbeat.server.pair.PairManager;
 import com.heartbeat.server.pair.PairRoom;
+import com.heartbeat.server.service.AuthService;
 import com.heartbeat.server.service.ServiceException;
 import com.heartbeat.common.model.User;
-import com.heartbeat.server.service.AuthService;
 
 import java.io.*;
 import java.net.Socket;
@@ -20,29 +20,22 @@ public class ClientHandler implements Runnable {
     private final Gson gson = new Gson();
     private final AuthService authService = new AuthService();
 
-
     private ClientSession session;
+
     private PairRoom room;
 
-    public ClientHandler(Socket socket) {
-        this.socket = socket;
-    }
+    public ClientHandler(Socket socket) { this.socket = socket; }
 
     @Override
     public void run() {
-
         try (
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream()));
-                PrintWriter out = new PrintWriter(
-                        socket.getOutputStream(), true)
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true)
         ) {
-
             session = new ClientSession(socket, out);
-
             String line;
             while ((line = in.readLine()) != null) {
-
+                System.out.println("SERVER RECEIVED: " + line);
                 Message message = gson.fromJson(line, Message.class);
                 if (message == null || message.getType() == null) continue;
 
@@ -58,60 +51,52 @@ public class ClientHandler implements Runnable {
                     }
 
                     case LOGIN -> {
-                        session.setUserId(message.getSender());
-                        session.send(new Message(
-                                MessageType.SYSTEM,
-                                "server",
-                                "LOGIN_OK"
-                        ));
+                        try {
+                            User user = authService.login(message.getSender(), message.getContent());
+                            session.setUserId(user.getUsername());
+                            session.send(new Message(MessageType.SYSTEM, "server", "LOGIN_OK"));
+                        } catch (ServiceException e) {
+                            session.send(new Message(MessageType.SYSTEM, "server", "LOGIN_FAIL: " + e.getMessage()));
+                        }
                     }
 
                     case PAIR -> {
                         room = PairManager.join(session);
-
                         if (room != null) {
-                            // повідомлення про успішне парування
-                            Message paired = new Message(
-                                    MessageType.SYSTEM,
-                                    "server",
-                                    "PAIRED"
-                            );
+                            Message paired = new Message(MessageType.SYSTEM, "server", "PAIRED");
                             paired.setRoomId(room.getId());
                             room.broadcast(paired);
 
-                            List<Message> history =
-                                    MessageDAO.loadLastMessagesByRoom(room.getId(), 100);
-
-                            for (Message msg : history) {
-                                room.broadcast(msg);
-                            }
+                            List<Message> history = MessageDAO.loadLastMessagesByRoom(room.getId(), 100);
+                            for (Message msg : history) room.broadcast(msg);
                         }
                     }
 
                     case CHAT, EMOJI -> {
-                        if (room == null) continue;
-
-                        String sender = session.getUserId();
-                        String receiver = room.getOtherUser(session);
+                        PairRoom room = PairManager.getRoom(session);
+                        if (room == null) {
+                            System.out.println("CHAT ignored, no room for " + session.getUserId());
+                            continue;
+                        }
 
                         Message fixed = new Message(
                                 message.getType(),
-                                sender,
+                                session.getUserId(),
                                 message.getContent()
                         );
 
-                        fixed.setReceiver(receiver);
+                        fixed.setReceiver(room.getOtherUser(session));
                         fixed.setRoomId(room.getId());
 
-                        // зберігаємо в базу
                         MessageDAO.save(fixed);
                         room.broadcast(fixed);
                     }
 
+
+
                     case UNPAIR -> {
-                        if (room != null) {
+                        if (PairManager.getRoom(session) != null) {
                             PairManager.leave(session);
-                            room = null;
                         }
                     }
                 }

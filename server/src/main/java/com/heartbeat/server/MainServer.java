@@ -1,6 +1,7 @@
 package com.heartbeat.server;
 
 import com.heartbeat.server.net.ClientHandler;
+import com.heartbeat.server.db.Database;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -12,6 +13,14 @@ public class MainServer {
 
     public static void main(String[] args) {
         System.out.println("Server starting...");
+
+        try {
+            Database.getConnection();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Database initialization failed!");
+            return;
+        }
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server listening on port " + PORT);
@@ -31,7 +40,6 @@ public class MainServer {
 }
 // ЗАПУСК
 //cd server
-//mvn clean package
-//java -jar target/server-1.0-SNAPSHOT.jar
-// mvn exec:java -Dexec.mainClass="com.heartbeat.server.MainServer"
+//mvn clean install
+//mvn clean compile exec:java
 

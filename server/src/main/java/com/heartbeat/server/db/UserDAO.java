@@ -37,7 +37,7 @@ public class UserDAO {
 
     // Пошук користувача по username
     public User findByUsername(String username) throws SQLException {
-        String sql = "SELECT username, password_hash FROM users WHERE username = ?";
+        String sql = "SELECT * FROM users WHERE username = ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -56,7 +56,6 @@ public class UserDAO {
         }
     }
 
-    // Пошук ID користувача по username (залишаємо для сумісності)
     public Integer findIdByUsername(String username) throws SQLException {
         String sql = "SELECT id FROM users WHERE username = ?";
 
