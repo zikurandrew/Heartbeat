@@ -1,35 +1,43 @@
 package com.heartbeat.server.db;
 
-import org.mindrot.jbcrypt.BCrypt;
+import com.heartbeat.common.model.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 
 public class UserDAO {
 
-    public static boolean register(String username, String password) {
+    // Збереження користувача
+    public void save(User user) throws SQLException {
+        String sql = """
+            INSERT INTO users(username, password_hash)
+            VALUES(?, ?)
+        """;
 
-        String hash = BCrypt.hashpw(password, BCrypt.gensalt());
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        String sql = "INSERT INTO users(username, password) VALUES (?, ?)";
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPasswordHash());
+            ps.executeUpdate();
+        }
+    }
+
+    // Перевірка, чи існує користувач
+    public boolean exists(String username) throws SQLException {
+        String sql = "SELECT 1 FROM users WHERE username = ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, username);
-            ps.setString(2, hash);
-            ps.executeUpdate();
-            return true;
-
-        } catch (Exception e) {
-            return false;
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
         }
     }
 
-    public static boolean login(String username, String password) {
-
-        String sql = "SELECT password FROM users WHERE username = ?";
+    // Пошук користувача по username
+    public User findByUsername(String username) throws SQLException {
+        String sql = "SELECT username, password_hash FROM users WHERE username = ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -37,13 +45,31 @@ public class UserDAO {
             ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
 
-            if (!rs.next()) return false;
+            if (rs.next()) {
+                return new User(
+                        rs.getString("username"),
+                        rs.getString("password_hash")
+                );
+            }
 
-            String hash = rs.getString("password");
-            return BCrypt.checkpw(password, hash);
+            return null;
+        }
+    }
 
-        } catch (Exception e) {
-            return false;
+    // Пошук ID користувача по username (залишаємо для сумісності)
+    public Integer findIdByUsername(String username) throws SQLException {
+        String sql = "SELECT id FROM users WHERE username = ?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+            return null;
         }
     }
 }

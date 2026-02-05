@@ -6,6 +6,9 @@ import com.heartbeat.common.model.Message;
 import com.heartbeat.common.model.MessageType;
 import com.heartbeat.server.pair.PairManager;
 import com.heartbeat.server.pair.PairRoom;
+import com.heartbeat.server.service.ServiceException;
+import com.heartbeat.common.model.User;
+import com.heartbeat.server.service.AuthService;
 
 import java.io.*;
 import java.net.Socket;
@@ -15,6 +18,8 @@ public class ClientHandler implements Runnable {
 
     private final Socket socket;
     private final Gson gson = new Gson();
+    private final AuthService authService = new AuthService();
+
 
     private ClientSession session;
     private PairRoom room;
@@ -43,6 +48,15 @@ public class ClientHandler implements Runnable {
 
                 switch (message.getType()) {
 
+                    case REGISTER -> {
+                        try {
+                            User user = authService.register(message.getSender(), message.getContent());
+                            session.send(new Message(MessageType.SYSTEM, "server", "REGISTER_OK"));
+                        } catch (ServiceException e) {
+                            session.send(new Message(MessageType.SYSTEM, "server", "REGISTER_FAIL: " + e.getMessage()));
+                        }
+                    }
+
                     case LOGIN -> {
                         session.setUserId(message.getSender());
                         session.send(new Message(
@@ -56,19 +70,17 @@ public class ClientHandler implements Runnable {
                         room = PairManager.join(session);
 
                         if (room != null) {
+                            // повідомлення про успішне парування
                             Message paired = new Message(
                                     MessageType.SYSTEM,
                                     "server",
                                     "PAIRED"
                             );
-
+                            paired.setRoomId(room.getId());
                             room.broadcast(paired);
 
-                            String userA = room.getA().getUserId();
-                            String userB = room.getB().getUserId();
-
                             List<Message> history =
-                                    MessageDAO.loadHistory(userA, userB);
+                                    MessageDAO.loadLastMessagesByRoom(room.getId(), 100);
 
                             for (Message msg : history) {
                                 room.broadcast(msg);
@@ -77,31 +89,36 @@ public class ClientHandler implements Runnable {
                     }
 
                     case CHAT, EMOJI -> {
-
                         if (room == null) continue;
 
-                        String from = session.getUserId();
-                        String to = room.getOtherUser(session);
+                        String sender = session.getUserId();
+                        String receiver = room.getOtherUser(session);
 
                         Message fixed = new Message(
                                 message.getType(),
-                                from,
+                                sender,
                                 message.getContent()
                         );
 
-                        MessageDAO.save(from, to, fixed);
+                        fixed.setReceiver(receiver);
+                        fixed.setRoomId(room.getId());
+
+                        // зберігаємо в базу
+                        MessageDAO.save(fixed);
                         room.broadcast(fixed);
                     }
 
                     case UNPAIR -> {
-                        PairManager.leave(session);
-                        room = null;
+                        if (room != null) {
+                            PairManager.leave(session);
+                            room = null;
+                        }
                     }
                 }
             }
 
         } catch (Exception e) {
-            System.out.println("Client disconnected");
+            System.out.println("Client disconnected: " + e.getMessage());
         } finally {
             PairManager.leave(session);
             if (session != null) session.close();

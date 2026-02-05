@@ -4,9 +4,10 @@ public class Message {
 
     private MessageType type;
     private String sender;
+    private String receiver;
     private String content;
     private long timestamp;
-
+    private String roomId;
 
     public Message(MessageType type, String sender, String content) {
         this.type = type;
@@ -23,11 +24,31 @@ public class Message {
         return sender;
     }
 
+    public String getReceiver() {
+        return receiver;
+    }
+
     public String getContent() {
         return content;
     }
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public String getRoomId() {
+        return roomId;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
+    }
+
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
     }
 }
