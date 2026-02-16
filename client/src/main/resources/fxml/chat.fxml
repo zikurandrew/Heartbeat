@@ -3,22 +3,39 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.heartbeat.client.controller.ChatController">
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.heartbeat.client.controller.ChatController"
+           stylesheets="@../css/chat.css">
 
-    <center>
-        <TextArea fx:id="chatArea"
-                  editable="false" />
-    </center>
+    <BorderPane>
+        <top>
+            <HBox spacing="10" styleClass="chat-header" alignment="CENTER_RIGHT">
+                <Button text="PAIR" onAction="#onPair" styleClass="icon-button"/>
+                <Button text="😀" onAction="#onEmoji" styleClass="icon-button"/>
+            </HBox>
+        </top>
 
-    <bottom>
-        <HBox spacing="5">
-            <TextField fx:id="messageField"
-                       HBox.hgrow="ALWAYS" />
-            <Button text="Send"
-                    onAction="#onSend"/>
-        </HBox>
-    </bottom>
+        <center>
+            <ScrollPane fx:id="chatScroll"
+                        fitToWidth="true"
+                        fitToHeight="true"
+                        styleClass="chat-scroll">
+                <VBox fx:id="chatBox" spacing="10" style="-fx-padding: 15;"/>
+            </ScrollPane>
+        </center>
 
-</BorderPane>
+        <bottom>
+            <HBox spacing="10" styleClass="input-container" alignment="CENTER">
+                <TextField fx:id="messageField"
+                           promptText="Type a message..."
+                           HBox.hgrow="ALWAYS"
+                           onAction="#onSend" />
+                <Button text="➤" onAction="#onSend" styleClass="send-button" minWidth="45"/>
+            </HBox>
+        </bottom>
+    </BorderPane>
+
+    <Pane fx:id="emojiLayer" pickOnBounds="false" mouseTransparent="true"/>
+
+</StackPane>

@@ -12,38 +12,40 @@ public class ClientConnection {
     private static Socket socket;
     private static PrintWriter out;
     private static BufferedReader in;
-
     private static final Gson gson = new Gson();
 
-    public static void connect() throws Exception {
+    private static String currentUsername;
+
+    public static void connect() throws IOException {
         socket = new Socket("localhost", 5000);
         out = new PrintWriter(socket.getOutputStream(), true);
-        in = new BufferedReader(
-                new InputStreamReader(socket.getInputStream())
-        );
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
-    public static void login(String username) {
-        send(new Message(
-                MessageType.LOGIN,
-                username,
-                ""
-        ));
-    }
-
-    public static void pair() {
-        send(new Message(
-                MessageType.PAIR,
-                null,
-                ""
-        ));
+    public static void login(String username, String password) {
+        currentUsername = username;
+        send(new Message(MessageType.LOGIN, username, password));
     }
 
     public static void send(Message message) {
-        out.println(gson.toJson(message));
+        if (out != null) {
+            out.println(gson.toJson(message));
+        }
+    }
+
+    public static String getUsername() {
+        return currentUsername;
     }
 
     public static BufferedReader getIn() {
         return in;
+    }
+
+    public static void close() {
+        try {
+            if (socket != null) socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -1,20 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.*?>
 
-<VBox spacing="10"
-      alignment="CENTER"
-      xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.heartbeat.client.controller.LoginController">
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.heartbeat.client.controller.LoginController"
+           stylesheets="@../css/login.css">
 
-    <Label text="Heartbeat" />
+    <VBox spacing="15"
+          alignment="CENTER"
+          styleClass="card"
+          maxWidth="400"
+          maxHeight="500">
 
-    <TextField fx:id="usernameField"
-               promptText="Username" />
+        <Label text="Heartbeat" styleClass="title"/>
 
-    <Button text="Login"
-            onAction="#onLogin" />
+        <TextField fx:id="usernameField"
+                   promptText="Username"
+                   maxWidth="300"/>
 
-</VBox>
+        <PasswordField fx:id="passwordField"
+                       promptText="Password"
+                       maxWidth="300"/>
+
+        <Button text="SIGN IN"
+                onAction="#onLogin"
+                styleClass="primary-button"
+                maxWidth="150" />
+
+        <Label text="Don't have an account? Sign up"
+               styleClass="hint"/>
+
+    </VBox>
+</StackPane>

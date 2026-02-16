@@ -4,8 +4,11 @@ import com.heartbeat.client.net.ClientConnection;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class LoginController {
 
@@ -13,19 +16,32 @@ public class LoginController {
     private TextField usernameField;
 
     @FXML
-    private void onLogin() throws Exception {
+    private PasswordField passwordField;
 
+    @FXML
+    private void onLogin() {
         String username = usernameField.getText();
+        String password = passwordField.getText();
+
         if (username.isBlank()) return;
 
-        ClientConnection.connect();
-        ClientConnection.login(username);
+        try {
+            ClientConnection.connect();
+            ClientConnection.login(username, password);
 
-        FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/fxml/chat.fxml")
-        );
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat.fxml"));
+            Stage stage = (Stage) usernameField.getScene().getWindow();
+            Scene chatScene = new Scene(loader.load(), 800, 600);
 
-        Stage stage = (Stage) usernameField.getScene().getWindow();
-        stage.setScene(new Scene(loader.load(), 600, 400));
+            stage.setScene(chatScene);
+
+            stage.setMinWidth(400);
+            stage.setMinHeight(500);
+
+            stage.centerOnScreen();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
