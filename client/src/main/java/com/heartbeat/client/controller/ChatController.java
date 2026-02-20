@@ -18,7 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-
+import javafx.scene.image.ImageView;
 import java.io.IOException;
 
 public class ChatController {
@@ -33,12 +33,30 @@ public class ChatController {
     private Pane emojiLayer;
     @FXML
     private Label typingLabel;
+    @FXML
+    private Label moodLabel;
+    @FXML
+    private ImageView avatarImage;
+    @FXML
+    private HBox leftHeader;
+    @FXML
+    private HBox rightHeader;
+    @FXML
+    private Label waitingLabel;
 
     private final Gson gson = new Gson();
     private boolean running = true;
 
     @FXML
     public void initialize() {
+        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(21, 21, 21); //горизонталь, вертикаль, радіус
+        avatarImage.setClip(clip);
+
+        leftHeader.setVisible(false);
+        leftHeader.setManaged(false);
+        rightHeader.setVisible(false);
+        rightHeader.setManaged(false);
+
         // Автопрокрутка вниз
         chatBox.heightProperty().addListener((obs, oldVal, newVal) -> chatScroll.setVvalue(1.0));
 
@@ -56,8 +74,7 @@ public class ChatController {
 
                 Platform.runLater(() -> {
 
-                    if (msg.getType() == MessageType.CHAT
-                            && msg.getSender().equals(ClientConnection.getUsername())) {
+                    if (msg.getSender() != null && msg.getSender().equals(ClientConnection.getUsername())) {
                         return;
                     }
 
@@ -72,8 +89,26 @@ public class ChatController {
     private void processMessage(Message msg) {
         switch (msg.getType()) {
             case CHAT -> addMessageBubble(msg.getSender(), msg.getContent(), false);
-            case SYSTEM -> addSystemLabel(msg.getContent());
+            case SYSTEM -> {
+                String content = msg.getContent();
+
+                if (content != null && content.startsWith("PAIRED")) {
+
+                    leftHeader.setVisible(true);
+                    leftHeader.setManaged(true);
+                    rightHeader.setVisible(true);
+                    rightHeader.setManaged(true);
+
+                    waitingLabel.setVisible(false);
+                    waitingLabel.setManaged(false);
+
+                    addSystemLabel(content);
+                } else {
+                    addSystemLabel(content);
+                }
+            }
             case EMOJI -> showEmojiAnimation(msg.getContent());
+            case MOOD -> moodLabel.setText(msg.getContent());
         }
     }
 
@@ -98,6 +133,25 @@ public class ChatController {
         String emoji = "😀";
         ClientConnection.send(new Message(MessageType.EMOJI, null, emoji));
         showEmojiAnimation(emoji);
+    }
+
+    @FXML
+    private void onGood(){
+        sendMood("good");
+    }
+
+    @FXML
+    private void onNeutral(){
+        sendMood("neutral");
+    }
+
+    @FXML
+    private void onBad(){
+        sendMood("bad");
+    }
+
+    private void sendMood(String moodText){
+        ClientConnection.send(new Message(MessageType.MOOD, null, moodText));
     }
 
     // --- UI Методи ---
