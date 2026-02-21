@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
 <StackPane xmlns="http://javafx.com/javafx"
@@ -10,10 +11,40 @@
 
     <BorderPane>
         <top>
-            <HBox spacing="10" styleClass="chat-header" alignment="CENTER_RIGHT">
-                <Button text="PAIR" onAction="#onPair" styleClass="icon-button"/>
-                <Button text="😀" onAction="#onEmoji" styleClass="icon-button"/>
-            </HBox>
+            <BorderPane styleClass="chat-header">
+
+                <center>
+                    <Label fx:id="waitingLabel" text="You are not in the room yet, press PAIR" />
+                </center>
+
+                <left>
+                    <HBox fx:id="leftHeader" spacing="12" alignment="CENTER_LEFT">
+                        <ImageView fx:id="avatarImage" fitHeight="42" fitWidth="42">
+                            <image>
+                                <Image url="@../images/cat.png" />
+                            </image>
+                        </ImageView>
+
+                        <VBox alignment="CENTER_LEFT" spacing="2">
+                            <Label text="Partner's name &lt;3" />
+
+                            <HBox spacing="4" alignment="CENTER_LEFT">
+                                <Label text="Partner's mood: " />
+                                <Label fx:id="moodLabel" text=" "/>
+                            </HBox>
+                        </VBox>
+                    </HBox>
+                </left>
+
+                <right>
+                    <HBox fx:id="rightHeader" spacing="10" alignment="CENTER_RIGHT">
+                        <Button text="&#128516;" onAction="#onGood" styleClass="icon-button"/>
+                        <Button text="&#128528;" onAction="#onNeutral" styleClass="icon-button"/>
+                        <Button text="&#128542;" onAction="#onBad" styleClass="icon-button"/>
+                    </HBox>
+                </right>
+
+            </BorderPane>
         </top>
 
         <center>
@@ -26,13 +57,18 @@
         </center>
 
         <bottom>
-            <HBox spacing="10" styleClass="input-container" alignment="CENTER">
-                <TextField fx:id="messageField"
-                           promptText="Type a message..."
-                           HBox.hgrow="ALWAYS"
-                           onAction="#onSend" />
-                <Button text="➤" onAction="#onSend" styleClass="send-button" minWidth="45"/>
-            </HBox>
+            <VBox>
+                <Label fx:id="typingLabel" text="typing..." visible="false" managed="false" styleClass="typing-label"/>
+                <HBox spacing="10" styleClass="input-container" alignment="CENTER">
+                    <TextField fx:id="messageField"
+                               promptText="Type a message..."
+                               HBox.hgrow="ALWAYS"
+                               onAction="#onSend" />
+                    <Button text="😀" onAction="#onEmoji" styleClass="icon-button"/>
+                    <Button text="PAIR" onAction="#onPair" styleClass="icon-button"/>
+                    <Button text="➤" onAction="#onSend" styleClass="send-button" minWidth="45"/>
+                </HBox>
+            </VBox>
         </bottom>
     </BorderPane>
 

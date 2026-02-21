@@ -1,10 +1,8 @@
 .root {
-    -fx-background-color: linear-gradient(
-        to bottom right,
-        #d8c9f6,
-        #a996d9,
-        #7a66b8
-    );
+    -fx-background-color:
+        radial-gradient(center 50% 0%, radius 80%, rgba(255,140,200,0.8), transparent),
+        radial-gradient(center 0% 100%, radius 80%, rgba(140,220,255,0.8), transparent),
+        radial-gradient(center 100% 100%, radius 80%, rgba(255,230,140,0.8), transparent);
 }
 
 .card {
@@ -27,7 +25,7 @@
 .title {
     -fx-font-size: 50px;
     -fx-font-weight: bold;
-    -fx-text-fill: #6b5ca5;
+    -fx-text-fill: #9F72AB;
 }
 
 .hint {
@@ -46,7 +44,7 @@
 }
 
 .primary-button {
-    -fx-background-color: #8f7cc4;
+    -fx-background-color: #AF8FBD;
     -fx-text-fill: white;
 
     -fx-background-radius: 30;
@@ -57,7 +55,7 @@
 }
 
 .primary-button:hover {
-    -fx-background-color: #7a66b8;
+    -fx-background-color: #93689E;
 }
 
 

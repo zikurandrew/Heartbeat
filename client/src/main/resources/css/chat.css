@@ -1,17 +1,27 @@
 .root {
-    -fx-background-color: linear-gradient(
-        to bottom right,
-        #d8c9f6,
-        #a996d9,
-        #7a66b8
-    );
+    -fx-background-color:
+        radial-gradient(center 50% 0%, radius 80%, rgba(255,140,200,0.8), transparent),
+        radial-gradient(center 0% 100%, radius 80%, rgba(140,220,255,0.8), transparent),
+        radial-gradient(center 100% 100%, radius 80%, rgba(255,230,140,0.8), transparent);
+
     -fx-font-size: 14px;
 }
 
 .chat-header {
-    -fx-padding: 15;
+    -fx-padding: 30;
     -fx-background-color: rgba(255, 255, 255, 0.3); /* Напівпрозора смужка зверху */
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);
+}
+
+Label {
+    -fx-text-fill: gray;
+}
+
+.typing-label {
+    -fx-text-fill: gray;
+    -fx-padding: 10 15;
+    -fx-font-size: 18px;
+    -fx-font-family: "Lato", sans-serif;
 }
 
 .scroll-pane, .scroll-pane .viewport {
@@ -33,7 +43,7 @@
 }
 
 .send-button {
-    -fx-background-color: #8f7cc4;
+    -fx-background-color: #AF8FBD;
     -fx-text-fill: white;
     -fx-background-radius: 50;
     -fx-font-size: 16px;
@@ -42,12 +52,12 @@
     -fx-pref-height: 45;
 }
 .send-button:hover {
-    -fx-background-color: #7a66b8;
+    -fx-background-color: #93689E;
 }
 
 .icon-button {
     -fx-background-color: rgba(255,255,255,0.6);
-    -fx-text-fill: #6b5ca5;
+    -fx-text-fill: #AF8FBD;
     -fx-font-weight: bold;
     -fx-background-radius: 15;
     -fx-cursor: hand;
@@ -59,7 +69,7 @@
 
 
 .bubble-me {
-    -fx-background-color: #8f7cc4;
+    -fx-background-color: #93689E;
     -fx-background-radius: 18 18 0 18;
     -fx-text-fill: white;
     -fx-padding: 10 15;
