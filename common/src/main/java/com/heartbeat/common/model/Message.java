@@ -9,6 +9,7 @@ public class Message {
     private long timestamp;
     private String roomId;
 
+    public Message() {}
     public Message(MessageType type, String sender, String content) {
         this.type = type;
         this.sender = sender;
@@ -18,6 +19,10 @@ public class Message {
 
     public MessageType getType() {
         return type;
+    }
+
+    public void setType(MessageType type) {
+        this.type = type;
     }
 
     public String getSender() {

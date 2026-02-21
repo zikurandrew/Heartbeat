@@ -67,15 +67,15 @@ public class Database {
             // Таблиця повідомлень
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    room_id TEXT NOT NULL,
-                    sender TEXT NOT NULL,
-                    receiver TEXT NOT NULL,
-                    type TEXT NOT NULL,
-                    content TEXT,
-                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (room_id) REFERENCES rooms(id)
-                )
+                             id INTEGER PRIMARY KEY AUTOINCREMENT,
+                             room_id TEXT NOT NULL,
+                             sender TEXT NOT NULL,
+                             receiver TEXT NOT NULL,
+                             type TEXT NOT NULL,
+                             content TEXT,
+                             timestamp INTEGER NOT NULL,
+                             FOREIGN KEY (room_id) REFERENCES rooms(id)
+                         )
             """);
 
             // Додаємо дефолтних користувачів

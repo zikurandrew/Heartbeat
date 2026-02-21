@@ -37,7 +37,9 @@ public class ClientHandler implements Runnable {
             while ((line = in.readLine()) != null) {
                 System.out.println("SERVER RECEIVED: " + line);
                 Message message = gson.fromJson(line, Message.class);
-                if (message == null || message.getType() == null) continue;
+                if (message != null && message.getTimestamp() == 0) {
+                    message.setTimestamp(System.currentTimeMillis());
+                }
 
                 switch (message.getType()) {
 
@@ -68,7 +70,12 @@ public class ClientHandler implements Runnable {
                             room.broadcast(paired);
 
                             List<Message> history = MessageDAO.loadLastMessagesByRoom(room.getId(), 100);
-                            for (Message msg : history) room.broadcast(msg);
+
+                            for (Message msg : history) {
+                                msg.setType(MessageType.HISTORY); // щоб клієнт обробив як історію
+                                room.getA().send(msg);
+                                room.getB().send(msg);
+                            }
                         }
                     }
 
@@ -88,10 +95,15 @@ public class ClientHandler implements Runnable {
                         fixed.setReceiver(room.getOtherUser(session));
                         fixed.setRoomId(room.getId());
 
-                        MessageDAO.save(fixed);
-                        room.broadcast(fixed);
-                    }
+                        if (message.getType() != MessageType.TYPING) {
+                            MessageDAO.save(fixed);
+                        }
 
+                        ClientSession partnerSession = (room.getA() == session) ? room.getB() : room.getA();
+                        if (partnerSession != null) {
+                            partnerSession.send(fixed);
+                        }
+                    }
 
 
                     case UNPAIR -> {

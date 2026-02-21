@@ -65,7 +65,7 @@ public class ChatController {
         typingAnimation();
 
         messageField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if(!newValue.isEmpty()) {
+            if (oldValue.isEmpty() && !newValue.isEmpty()) {
                 ClientConnection.send(new Message(MessageType.TYPING, null, "typing"));
             }
         });
@@ -83,11 +83,6 @@ public class ChatController {
                 if (msg == null) continue;
 
                 Platform.runLater(() -> {
-
-                    if (msg.getSender() != null && msg.getSender().equals(ClientConnection.getUsername())) {
-                        return;
-                    }
-
                     processMessage(msg);
                 });
             }
@@ -118,7 +113,7 @@ public class ChatController {
                     waitingLabel.setVisible(false);
                     waitingLabel.setManaged(false);
 
-                    addSystemLabel(content);
+                    showConnectedBanner();
                 } else {
                     addSystemLabel(content);
                 }
@@ -137,6 +132,10 @@ public class ChatController {
 
                     typingTimer.playFromStart();
                 });
+            }
+            case HISTORY -> {
+                boolean isMe = msg.getSender().equals(ClientConnection.getUsername());
+                addMessageBubble(msg.getSender(), msg.getContent(), isMe);
             }
         }
     }
@@ -268,4 +267,29 @@ public class ChatController {
         typingLabel.setVisible(false);
         typingLabel.setManaged(false);
     }
+    private void showConnectedBanner() {
+
+        Label label = new Label("🔗 Connected to lovely");
+        label.setStyle("""
+        -fx-background-color: #1f1f1f;
+        -fx-text-fill: #00ff99;
+        -fx-padding: 8 15 8 15;
+        -fx-background-radius: 20;
+        -fx-font-size: 12px;
+    """);
+
+        HBox wrapper = new HBox(label);
+        wrapper.setAlignment(Pos.CENTER);
+        wrapper.setPadding(new Insets(10, 0, 10, 0));
+
+        label.setOpacity(0);
+
+        FadeTransition fade = new FadeTransition(Duration.seconds(0.6), label);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+        fade.play();
+
+        chatBox.getChildren().add(wrapper);
+    }
+
 }
