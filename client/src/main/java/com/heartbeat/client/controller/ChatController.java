@@ -4,9 +4,7 @@ import com.google.gson.Gson;
 import com.heartbeat.client.net.ClientConnection;
 import com.heartbeat.common.model.Message;
 import com.heartbeat.common.model.MessageType;
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -18,6 +16,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import javafx.animation.FadeTransition;
 import javafx.scene.image.ImageView;
 import java.io.IOException;
 
@@ -44,6 +43,9 @@ public class ChatController {
     @FXML
     private Label waitingLabel;
 
+    private final PauseTransition typingTimer = new PauseTransition(Duration.seconds(2));
+    private Timeline dotsAnimation;
+    private FadeTransition fadeAnimation;
     private final Gson gson = new Gson();
     private boolean running = true;
 
@@ -59,6 +61,14 @@ public class ChatController {
 
         // Автопрокрутка вниз
         chatBox.heightProperty().addListener((obs, oldVal, newVal) -> chatScroll.setVvalue(1.0));
+
+        typingAnimation();
+
+        messageField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if(!newValue.isEmpty()) {
+                ClientConnection.send(new Message(MessageType.TYPING, null, "typing"));
+            }
+        });
 
         Thread listener = new Thread(this::listenServer);
         listener.setDaemon(true);
@@ -88,7 +98,13 @@ public class ChatController {
 
     private void processMessage(Message msg) {
         switch (msg.getType()) {
-            case CHAT -> addMessageBubble(msg.getSender(), msg.getContent(), false);
+            case CHAT -> {
+                typingLabel.setVisible(false);
+                typingLabel.setManaged(false);
+                dotsAnimation.stop();
+                fadeAnimation.stop();
+                addMessageBubble(msg.getSender(), msg.getContent(), false);
+            }
             case SYSTEM -> {
                 String content = msg.getContent();
 
@@ -109,6 +125,19 @@ public class ChatController {
             }
             case EMOJI -> showEmojiAnimation(msg.getContent());
             case MOOD -> moodLabel.setText(msg.getContent());
+            case TYPING -> {
+                Platform.runLater(() ->{
+                    typingLabel.setVisible(true);
+                    typingLabel.setManaged(true);
+
+                    if(dotsAnimation.getStatus() != Animation.Status.RUNNING) {
+                        dotsAnimation.playFromStart();
+                        fadeAnimation.playFromStart();
+                    }
+
+                    typingTimer.playFromStart();
+                });
+            }
         }
     }
 
@@ -209,5 +238,34 @@ public class ChatController {
         ParallelTransition pt = new ParallelTransition(tt, ft);
         pt.setOnFinished(e -> emojiLayer.getChildren().remove(lbl));
         pt.play();
+    }
+
+    private void typingAnimation(){
+        //Анімація крапок
+        dotsAnimation = new Timeline(
+                new KeyFrame(Duration.ZERO, e -> typingLabel.setText("typing")),
+                new KeyFrame(Duration.seconds(0.4), e -> typingLabel.setText("typing.")),
+                new KeyFrame(Duration.seconds(0.8), e -> typingLabel.setText("typing..")),
+                new KeyFrame(Duration.seconds(1.2), e -> typingLabel.setText("typing...")),
+                new KeyFrame(Duration.seconds(1.6))
+        );
+        dotsAnimation.setCycleCount(Animation.INDEFINITE);
+
+        //Анімація пульсації
+        fadeAnimation = new FadeTransition(Duration.seconds(1), typingLabel);
+        fadeAnimation.setFromValue(0.4);
+        fadeAnimation.setToValue(1.0);
+        fadeAnimation.setCycleCount(Animation.INDEFINITE);
+        fadeAnimation.setAutoReverse(true);
+
+        typingTimer.setOnFinished(event ->{
+            typingLabel.setVisible(false);
+            typingLabel.setManaged(false);
+            if(dotsAnimation != null) dotsAnimation.stop();
+            if(fadeAnimation != null) fadeAnimation.stop();
+        });
+
+        typingLabel.setVisible(false);
+        typingLabel.setManaged(false);
     }
 }

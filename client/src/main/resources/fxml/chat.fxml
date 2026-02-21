@@ -57,15 +57,18 @@
         </center>
 
         <bottom>
-            <HBox spacing="10" styleClass="input-container" alignment="CENTER">
-                <TextField fx:id="messageField"
-                           promptText="Type a message..."
-                           HBox.hgrow="ALWAYS"
-                           onAction="#onSend" />
-                <Button text="😀" onAction="#onEmoji" styleClass="icon-button"/>
-                <Button text="PAIR" onAction="#onPair" styleClass="icon-button"/>
-                <Button text="➤" onAction="#onSend" styleClass="send-button" minWidth="45"/>
-            </HBox>
+            <VBox>
+                <Label fx:id="typingLabel" text="typing..." visible="false" managed="false" styleClass="typing-label"/>
+                <HBox spacing="10" styleClass="input-container" alignment="CENTER">
+                    <TextField fx:id="messageField"
+                               promptText="Type a message..."
+                               HBox.hgrow="ALWAYS"
+                               onAction="#onSend" />
+                    <Button text="😀" onAction="#onEmoji" styleClass="icon-button"/>
+                    <Button text="PAIR" onAction="#onPair" styleClass="icon-button"/>
+                    <Button text="➤" onAction="#onSend" styleClass="send-button" minWidth="45"/>
+                </HBox>
+            </VBox>
         </bottom>
     </BorderPane>
 

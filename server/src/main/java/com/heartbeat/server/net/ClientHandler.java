@@ -72,7 +72,7 @@ public class ClientHandler implements Runnable {
                         }
                     }
 
-                    case CHAT, EMOJI, MOOD -> {
+                    case CHAT, EMOJI, MOOD, TYPING -> {
                         PairRoom room = PairManager.getRoom(session);
                         if (room == null) {
                             System.out.println("CHAT ignored, no room for " + session.getUserId());
