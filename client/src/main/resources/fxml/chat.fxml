@@ -25,13 +25,13 @@
                             </image>
                         </ImageView>
 
-                        <VBox alignment="CENTER_LEFT" spacing="2">
-                            <Label text="Partner's name &lt;3" />
-
+                        <VBox alignment="CENTER_LEFT" spacing="2" minHeight="42">
                             <HBox spacing="4" alignment="CENTER_LEFT">
                                 <Label text="Partner's mood: " />
                                 <Label fx:id="moodLabel" text=" "/>
                             </HBox>
+
+                            <Label fx:id="typingLabel" text="online"  />
                         </VBox>
                     </HBox>
                 </left>
@@ -57,8 +57,6 @@
         </center>
 
         <bottom>
-            <VBox>
-                <Label fx:id="typingLabel" text="typing..." visible="false" managed="false" styleClass="typing-label"/>
                 <HBox spacing="10" styleClass="input-container" alignment="CENTER">
                     <TextField fx:id="messageField"
                                promptText="Type a message..."
@@ -68,7 +66,6 @@
                     <Button text="PAIR" onAction="#onPair" styleClass="icon-button"/>
                     <Button text="➤" onAction="#onSend" styleClass="send-button" minWidth="45"/>
                 </HBox>
-            </VBox>
         </bottom>
     </BorderPane>
 

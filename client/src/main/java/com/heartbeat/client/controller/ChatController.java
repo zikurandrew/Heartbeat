@@ -44,6 +44,7 @@ public class ChatController {
     private Label waitingLabel;
 
     private final PauseTransition typingTimer = new PauseTransition(Duration.seconds(2));
+    private long lastTypingTime = 0;
     private Timeline dotsAnimation;
     private FadeTransition fadeAnimation;
     private final Gson gson = new Gson();
@@ -65,8 +66,12 @@ public class ChatController {
         typingAnimation();
 
         messageField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (oldValue.isEmpty() && !newValue.isEmpty()) {
-                ClientConnection.send(new Message(MessageType.TYPING, null, "typing"));
+            if (!newValue.isEmpty()) {
+                long now = System.currentTimeMillis();
+                if (now - lastTypingTime > 1500) {
+                    ClientConnection.send(new Message(MessageType.TYPING, null, "typing"));
+                    lastTypingTime = now;
+                }
             }
         });
 
@@ -94,8 +99,6 @@ public class ChatController {
     private void processMessage(Message msg) {
         switch (msg.getType()) {
             case CHAT -> {
-                typingLabel.setVisible(false);
-                typingLabel.setManaged(false);
                 dotsAnimation.stop();
                 fadeAnimation.stop();
                 addMessageBubble(msg.getSender(), msg.getContent(), false);
@@ -113,8 +116,9 @@ public class ChatController {
                     waitingLabel.setVisible(false);
                     waitingLabel.setManaged(false);
 
-                    showConnectedBanner();
-                } else {
+                }
+
+                if (content != null) {
                     addSystemLabel(content);
                 }
             }
@@ -122,8 +126,6 @@ public class ChatController {
             case MOOD -> moodLabel.setText(msg.getContent());
             case TYPING -> {
                 Platform.runLater(() ->{
-                    typingLabel.setVisible(true);
-                    typingLabel.setManaged(true);
 
                     if(dotsAnimation.getStatus() != Animation.Status.RUNNING) {
                         dotsAnimation.playFromStart();
@@ -158,7 +160,7 @@ public class ChatController {
 
     @FXML
     private void onEmoji() {
-        String emoji = "😀";
+        String emoji = "♥";
         ClientConnection.send(new Message(MessageType.EMOJI, null, emoji));
         showEmojiAnimation(emoji);
     }
@@ -211,17 +213,14 @@ public class ChatController {
         chatBox.getChildren().add(container);
     }
 
-    private void addSystemLabel(String text) {
-        Label label = new Label("[SYSTEM] " + text);
-        label.setStyle("-fx-text-fill: gray; -fx-font-size: 10px; -fx-padding: 5;");
-        label.setMaxWidth(Double.MAX_VALUE);
-        label.setAlignment(Pos.CENTER);
-        chatBox.getChildren().add(label);
-    }
-
     private void showEmojiAnimation(String emoji) {
         Label lbl = new Label(emoji);
-        lbl.setStyle("-fx-font-size: 50px;");
+        lbl.setStyle("""
+            -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+            -fx-font-size: 100px;
+            -fx-text-fill: #ff3b30; /* Яскраво-червоний колір */
+            -fx-effect: dropshadow(gaussian, rgba(255, 59, 48, 0.4), 10, 0, 0, 0); /* Додаємо легке червоне світіння для краси */
+        """);
         lbl.setLayoutX(Math.random() * (emojiLayer.getWidth() - 50));
         lbl.setLayoutY(-50);
 
@@ -258,25 +257,52 @@ public class ChatController {
         fadeAnimation.setAutoReverse(true);
 
         typingTimer.setOnFinished(event ->{
-            typingLabel.setVisible(false);
-            typingLabel.setManaged(false);
+            typingLabel.setText("online");
             if(dotsAnimation != null) dotsAnimation.stop();
             if(fadeAnimation != null) fadeAnimation.stop();
         });
 
-        typingLabel.setVisible(false);
-        typingLabel.setManaged(false);
     }
-    private void showConnectedBanner() {
+    private void addSystemLabel(String text) {
+        String displayText = text;
+        String cssStyle = "";
 
-        Label label = new Label("🔗 Connected to lovely");
-        label.setStyle("""
-        -fx-background-color: #1f1f1f;
-        -fx-text-fill: #00ff99;
-        -fx-padding: 8 15 8 15;
-        -fx-background-radius: 20;
-        -fx-font-size: 12px;
-    """);
+        if (text.equals("LOGIN_OK")) {
+            displayText = "✨ You entered heartbeat";
+            cssStyle = """
+                -fx-background-color: rgba(175, 143, 189, 0.15); 
+                -fx-text-fill: #93689E; 
+                -fx-padding: 6 15 6 15; 
+                -fx-background-radius: 20; 
+                -fx-font-size: 11px;
+                -fx-font-weight: bold;
+            """;
+        } else if (text.startsWith("PAIRED")) {
+            displayText = "🔗 Connected to lovely";
+            cssStyle = """
+                -fx-background-color: rgba(175, 143, 189, 0.25); 
+                -fx-text-fill: #8A5A9E; 
+                -fx-padding: 8 18 8 18; 
+                -fx-background-radius: 20; 
+                -fx-font-size: 12px;
+                -fx-font-weight: bold;
+                -fx-effect: dropshadow(gaussian, rgba(175,143,189,0.3), 5, 0, 0, 2);
+            """;
+        } else if (text.equals("UNPAIR") || text.equals("DISCONNECTED")) {
+            displayText = "💔 Lovely disconnected";
+            cssStyle = """
+                -fx-background-color: rgba(255, 100, 100, 0.15); 
+                -fx-text-fill: #D9534F; 
+                -fx-padding: 6 15 6 15; 
+                -fx-background-radius: 20; 
+                -fx-font-size: 11px;
+                -fx-font-weight: bold;
+            """;
+        } else {
+            cssStyle = "-fx-text-fill: gray; -fx-font-size: 10px; -fx-padding: 5;";
+        }
+        Label label = new Label(displayText);
+        label.setStyle(cssStyle);
 
         HBox wrapper = new HBox(label);
         wrapper.setAlignment(Pos.CENTER);

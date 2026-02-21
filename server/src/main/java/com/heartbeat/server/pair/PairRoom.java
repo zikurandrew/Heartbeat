@@ -14,7 +14,15 @@ public class PairRoom {
     public PairRoom(ClientSession a, ClientSession b) {
         this.a = a;
         this.b = b;
-        this.id = UUID.randomUUID().toString();
+
+        String u1 = a.getUserId();
+        String u2 = b.getUserId();
+
+        if (u1.compareTo(u2) < 0) {
+            this.id = u1 + "_" + u2;
+        } else {
+            this.id = u2 + "_" + u1;
+        }
     }
 
     public String getOtherUser(ClientSession me) {

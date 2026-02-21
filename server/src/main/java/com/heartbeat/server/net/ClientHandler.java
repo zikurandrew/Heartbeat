@@ -95,7 +95,7 @@ public class ClientHandler implements Runnable {
                         fixed.setReceiver(room.getOtherUser(session));
                         fixed.setRoomId(room.getId());
 
-                        if (message.getType() != MessageType.TYPING) {
+                        if (message.getType() == MessageType.CHAT) {
                             MessageDAO.save(fixed);
                         }
 
