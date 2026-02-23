@@ -10,13 +10,18 @@ import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import javafx.animation.FadeTransition;
 import javafx.scene.image.ImageView;
@@ -167,7 +172,7 @@ public class ChatController {
 
     @FXML
     private void onEmoji() {
-        String emoji = "♥";
+        String emoji = "❤";
         ClientConnection.send(new Message(MessageType.EMOJI, null, emoji));
         showEmojiAnimation(emoji);
     }
@@ -221,28 +226,67 @@ public class ChatController {
     }
 
     private void showEmojiAnimation(String emoji) {
-        Label lbl = new Label(emoji);
-        lbl.setStyle("""
-    -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
-    -fx-font-size: 50px;
-    -fx-text-fill: linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(255, 153, 204, 0.4));
-    -fx-effect: dropshadow(gaussian, rgba(255, 105, 180, 0.6), 25, 0.2, 0, 5);
-    """);
-        lbl.setLayoutX(Math.random() * (emojiLayer.getWidth() - 50));
-        lbl.setLayoutY(-50);
+        Platform.runLater(() -> {
+            Stage floatingStage = new Stage();
+            floatingStage.initStyle(StageStyle.TRANSPARENT);
+            floatingStage.setAlwaysOnTop(true);
 
-        emojiLayer.getChildren().add(lbl);
+            Label emojiLabel = new Label(emoji);
 
-        TranslateTransition tt = new TranslateTransition(Duration.seconds(3), lbl);
-        tt.setToY(emojiLayer.getHeight() + 50);
+            String baseFont = "-fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; ";
 
-        FadeTransition ft = new FadeTransition(Duration.seconds(3), lbl);
-        ft.setFromValue(1);
-        ft.setToValue(0);
+            switch (emoji) {
+                case "❤":
+                    emojiLabel.setStyle(baseFont + """
+                        -fx-font-size: 120px;
+                        -fx-padding: 50px;
+                        -fx-text-fill: rgba(230, 130, 210, 0.85);
+                        -fx-effect: dropshadow(gaussian, rgba(255, 105, 180, 0.6), 25, 0.2, 0, 5);
+                    """);
 
-        ParallelTransition pt = new ParallelTransition(tt, ft);
-        pt.setOnFinished(e -> emojiLayer.getChildren().remove(lbl));
-        pt.play();
+                    // Пульсує 2 секунди
+                    ScaleTransition pulse = new ScaleTransition(Duration.seconds(0.6), emojiLabel);
+                    pulse.setByX(0.2); // Збільшується на 20%
+                    pulse.setByY(0.2);
+                    pulse.setAutoReverse(true);
+                    pulse.setCycleCount(4);
+
+                    // Після пульсації плавно зникає
+                    FadeTransition fadeHeart = new FadeTransition(Duration.seconds(0.8), emojiLabel);
+                    fadeHeart.setDelay(Duration.seconds(2.0));
+                    fadeHeart.setFromValue(1.0);
+                    fadeHeart.setToValue(0.0);
+                    fadeHeart.setOnFinished(e -> floatingStage.close());
+
+                    pulse.play();
+                    fadeHeart.play();
+                    break;
+
+                default:
+                    emojiLabel.setStyle(baseFont + "-fx-font-size: 150px;");
+
+                    FadeTransition fadeDefault = new FadeTransition(Duration.seconds(2.0), emojiLabel);
+                    fadeDefault.setFromValue(1.0);
+                    fadeDefault.setToValue(0.0);
+                    fadeDefault.setOnFinished(e -> floatingStage.close());
+
+                    TranslateTransition floatUp = new TranslateTransition(Duration.seconds(2.0), emojiLabel);
+                    floatUp.setByY(-50);
+
+                    fadeDefault.play();
+                    floatUp.play();
+                    break;
+            }
+
+            StackPane root = new StackPane(emojiLabel);
+            root.setStyle("-fx-background-color: transparent;");
+
+            Scene scene = new Scene(root);
+            scene.setFill(Color.TRANSPARENT);
+            floatingStage.setScene(scene);
+
+            floatingStage.show();
+        });
     }
 
     private void createHoverEmojiMenu(){
@@ -386,10 +430,10 @@ public class ChatController {
         } else if (text.equals("UNPAIR") || text.equals("DISCONNECTED")) {
             displayText = "💔 Lovely disconnected";
             cssStyle = """
-                -fx-background-color: rgba(255, 100, 100, 0.15); 
-                -fx-text-fill: #D9534F; 
-                -fx-padding: 6 15 6 15; 
-                -fx-background-radius: 20; 
+                -fx-background-color: rgba(255, 100, 100, 0.15);
+                -fx-text-fill: #D9534F;
+                -fx-padding: 6 15 6 15;
+                -fx-background-radius: 20;
                 -fx-font-size: 11px;
                 -fx-font-weight: bold;
             """;

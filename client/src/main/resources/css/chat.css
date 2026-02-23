@@ -99,7 +99,7 @@ Label {
     -fx-background-radius: 15;
     -fx-cursor: hand;
     -fx-padding: 5 15;
-    -fx-font-family: 'Segoe UI Emoji';
+    -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
 }
 .icon-button:hover {
     -fx-background-color: white;
