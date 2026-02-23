@@ -62,13 +62,13 @@
                                promptText="Type a message..."
                                HBox.hgrow="ALWAYS"
                                onAction="#onSend" />
-                    <Button text="😀" onAction="#onEmoji" styleClass="icon-button"/>
+                    <Button fx:id="emojiButton" text="❤" onAction="#onEmoji" styleClass="icon-button"/>
                     <Button text="PAIR" onAction="#onPair" styleClass="icon-button"/>
                     <Button text="➤" onAction="#onSend" styleClass="send-button" minWidth="45"/>
                 </HBox>
         </bottom>
     </BorderPane>
 
-    <Pane fx:id="emojiLayer" pickOnBounds="false" mouseTransparent="true"/>
+    <Pane fx:id="emojiLayer" pickOnBounds="false" />
 
 </StackPane>

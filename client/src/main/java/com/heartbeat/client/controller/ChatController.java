@@ -7,8 +7,10 @@ import com.heartbeat.common.model.MessageType;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -31,6 +33,8 @@ public class ChatController {
     @FXML
     private Pane emojiLayer;
     @FXML
+    private Button emojiButton;
+    @FXML
     private Label typingLabel;
     @FXML
     private Label moodLabel;
@@ -47,6 +51,8 @@ public class ChatController {
     private long lastTypingTime = 0;
     private Timeline dotsAnimation;
     private FadeTransition fadeAnimation;
+    private HBox emojiMenu;
+    private PauseTransition hideMenuTimer;
     private final Gson gson = new Gson();
     private boolean running = true;
 
@@ -64,6 +70,7 @@ public class ChatController {
         chatBox.heightProperty().addListener((obs, oldVal, newVal) -> chatScroll.setVvalue(1.0));
 
         typingAnimation();
+        createHoverEmojiMenu();
 
         messageField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.isEmpty()) {
@@ -216,11 +223,11 @@ public class ChatController {
     private void showEmojiAnimation(String emoji) {
         Label lbl = new Label(emoji);
         lbl.setStyle("""
-            -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
-            -fx-font-size: 100px;
-            -fx-text-fill: #ff3b30; /* Яскраво-червоний колір */
-            -fx-effect: dropshadow(gaussian, rgba(255, 59, 48, 0.4), 10, 0, 0, 0); /* Додаємо легке червоне світіння для краси */
-        """);
+    -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+    -fx-font-size: 50px;
+    -fx-text-fill: linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(255, 153, 204, 0.4));
+    -fx-effect: dropshadow(gaussian, rgba(255, 105, 180, 0.6), 25, 0.2, 0, 5);
+    """);
         lbl.setLayoutX(Math.random() * (emojiLayer.getWidth() - 50));
         lbl.setLayoutY(-50);
 
@@ -236,6 +243,94 @@ public class ChatController {
         ParallelTransition pt = new ParallelTransition(tt, ft);
         pt.setOnFinished(e -> emojiLayer.getChildren().remove(lbl));
         pt.play();
+    }
+
+    private void createHoverEmojiMenu(){
+        emojiMenu = new HBox(12);
+        emojiMenu.setStyle("""
+            -fx-background-color: rgba(255, 255, 255, 0.75);
+            -fx-background-radius: 30;
+            -fx-padding: 8 15 8 15;
+            -fx-effect: dropshadow(gaussian, rgba(175, 143, 189, 0.4), 15, 0, 0, 5);
+        """);
+        emojiMenu.setVisible(false);
+        emojiMenu.setOpacity(0);
+
+        String[] emojis = {"❤", "😭", "🥰", "😡", "😌"};
+        for (String em : emojis){
+            Label lbl = new Label(em);
+            lbl.setStyle("-fx-font-size: 26px; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', sans-serif;");
+
+            //анімація збільшення при наведені
+            lbl.setOnMouseEntered(e -> {
+                ScaleTransition st = new ScaleTransition(Duration.millis(150), lbl);
+                st.setToX(1.4); st.setToY(1.4); st.play();
+            });
+            lbl.setOnMouseExited(e -> {
+                ScaleTransition st = new ScaleTransition(Duration.millis(150), lbl);
+                st.setToX(1.0); st.setToY(1.0); st.play();
+            });
+
+            lbl.setOnMouseClicked(e ->{
+                ClientConnection.send(new Message(MessageType.EMOJI, null, em));
+                showEmojiAnimation(em);
+                hideMenuTimer.playFromStart();
+            });
+
+            emojiMenu.getChildren().add(lbl);
+        }
+
+        emojiLayer.getChildren().add(emojiMenu);//меню на прозорий шар
+
+        hideMenuTimer = new PauseTransition(Duration.millis(300));
+        hideMenuTimer.setOnFinished(e -> hideEmojiMenuAnimation());
+
+        emojiButton.setOnMouseEntered(e -> showEmojiMenuAnimation());//відкриття при наведені
+
+        emojiButton.setOnMouseExited(e -> hideMenuTimer.playFromStart());//якщо мишка зійшла ховаємо
+
+        emojiMenu.setOnMouseEntered(e -> hideMenuTimer.stop());//якщо мишка зайшла в меню зупиняємо таймер
+
+        emojiMenu.setOnMouseExited(e -> hideMenuTimer.playFromStart()); //якщо мишка зійшла знову ставимо таймер
+
+    }
+
+    private void showEmojiMenuAnimation(){
+        if (emojiMenu.isVisible() && emojiMenu.getOpacity() == 1.0 ) return;
+
+        Bounds bounds = emojiButton.localToScene(emojiButton.getBoundsInLocal());//позиція кнопки
+
+        emojiMenu.setLayoutX(bounds.getMinX() - 60);
+        emojiMenu.setLayoutY(bounds.getMinY() - 60);
+
+        emojiMenu.setVisible(true);
+
+        //зсув на право
+        TranslateTransition slideRight = new TranslateTransition(Duration.millis(250), emojiMenu);
+        slideRight.setFromX(-30);
+        slideRight.setToX(0);
+
+        //плавна поява
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(250), emojiMenu);
+        fadeIn.setFromValue(emojiMenu.getOpacity());
+        fadeIn.setToValue(1.0);
+
+        slideRight.play();
+        fadeIn.play();
+    }
+
+    private void hideEmojiMenuAnimation(){
+        TranslateTransition slideLeft = new TranslateTransition(Duration.millis(200), emojiMenu);
+        slideLeft.setToX(-20); //їде вліво
+
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(200), emojiMenu);
+        fadeOut.setToValue(0.0);
+
+        fadeOut.setOnFinished(e -> emojiMenu.setVisible(false));//невидимий, коли анімація закінчується
+
+        slideLeft.play();
+        fadeOut.play();
+
     }
 
     private void typingAnimation(){
