@@ -172,7 +172,7 @@ public class ChatController {
 
     @FXML
     private void onEmoji() {
-        String emoji = "❤";
+        String emoji = "♥";
         ClientConnection.send(new Message(MessageType.EMOJI, null, emoji));
         showEmojiAnimation(emoji);
     }
@@ -233,12 +233,12 @@ public class ChatController {
 
             Label emojiLabel = new Label(emoji);
 
-            String baseFont = "-fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; ";
+            String baseFont = "-fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;";
 
             switch (emoji) {
-                case "❤":
+                case "♥":
                     emojiLabel.setStyle(baseFont + """
-                        -fx-font-size: 120px;
+                        -fx-font-size: 150px;
                         -fx-padding: 50px;
                         -fx-text-fill: rgba(230, 130, 210, 0.85);
                         -fx-effect: dropshadow(gaussian, rgba(255, 105, 180, 0.6), 25, 0.2, 0, 5);
@@ -300,10 +300,15 @@ public class ChatController {
         emojiMenu.setVisible(false);
         emojiMenu.setOpacity(0);
 
-        String[] emojis = {"❤", "😭", "🥰", "😡", "😌"};
+        String[] emojis = {"♥", "😭", "🥰", "😡", "😌"};
         for (String em : emojis){
             Label lbl = new Label(em);
-            lbl.setStyle("-fx-font-size: 26px; -fx-cursor: hand; -fx-font-family: 'Segoe UI Emoji', sans-serif;");
+            lbl.setStyle("""
+                    -fx-font-size: 26px;
+                    -fx-cursor: hand;
+                    -fx-text-fill: #AF8FBD;
+                    -fx-font-family: 'Segoe UI Emoji', sans-serif;
+                    """);
 
             //анімація збільшення при наведені
             lbl.setOnMouseEntered(e -> {
