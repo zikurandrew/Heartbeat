@@ -302,8 +302,30 @@ public class ChatController {
                     fadeEmoji.play();
                     break;
 
+                case "😡":
+                    emojiLabel.setStyle(baseFont + """
+                            -fx-font-size: 150px;
+                            -fx-padding: 100px;
+                            -fx-text-fill: linear-gradient(to bottom right, rgba(255, 100, 130, 0.95), rgba(235, 40, 70, 0.85));
+                            -fx-effect: dropshadow(gaussian, rgba(255, 60, 90, 0.5), 30, 0.15, 0, 0);
+                            """);
+
+                    TranslateTransition shake = new TranslateTransition(Duration.millis(50), emojiLabel);
+                    shake.setByX(15);
+                    shake.setAutoReverse(true);
+                    shake.setCycleCount(10);
+
+                    FadeTransition fadeAngry = new FadeTransition(Duration.seconds(1.0), emojiLabel);
+                    fadeAngry.setDelay(Duration.seconds(0.8));
+                    fadeAngry.setToValue(0.0);
+                    fadeAngry.setOnFinished(e -> floatingStage.close());
+
+                    shake.play();
+                    fadeAngry.play();
+                    break;
+
                 default:
-                    emojiLabel.setStyle(baseFont + "-fx-font-size: 150px;");
+                    emojiLabel.setStyle(baseFont + "-fx-font-size: 150px; -fx-padding: 100px;");
 
                     FadeTransition fadeDefault = new FadeTransition(Duration.seconds(2.0), emojiLabel);
                     fadeDefault.setFromValue(1.0);
