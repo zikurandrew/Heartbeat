@@ -262,18 +262,31 @@ public class ChatController {
                     fadeHeart.play();
                     break;
 
+                case "🥰":
                 case "😭":
-                    emojiLabel.setStyle(baseFont + """
+                    if(emoji.equals("😭")){
+                        emojiLabel.setStyle(baseFont + """
                             -fx-font-size: 150px;
                             -fx-padding: 100px;
                             -fx-text-fill: linear-gradient(to bottom right, rgba(200, 240, 255, 0.95), rgba(90, 180, 255, 0.7));
                             -fx-effect: dropshadow(gaussian, rgba(90, 170, 255, 0.5), 35, 0.1, 0, 5);
                             """);
 
-                    TranslateTransition shiver = new TranslateTransition(Duration.millis(150), emojiLabel);
-                    shiver.setByX(4); // Трохи зсувається вбік
-                    shiver.setAutoReverse(true);
-                    shiver.setCycleCount(10);
+                        TranslateTransition shiver = new TranslateTransition(Duration.millis(150), emojiLabel);
+                        shiver.setByX(6); // Трохи зсувається вбік
+                        shiver.setAutoReverse(true);
+                        shiver.setCycleCount(10);
+
+                        shiver.play();
+
+                    } else {
+                        emojiLabel.setStyle(baseFont + """
+                            -fx-font-size: 150px;
+                            -fx-padding: 100px;
+                            -fx-text-fill: linear-gradient(to bottom right, rgba(255, 240, 180, 0.95), rgba(255, 130, 160, 0.8));
+                            -fx-effect: dropshadow(gaussian, rgba(255, 190, 100, 0.6), 35, 0.2, 0, 5);
+                            """);
+                    }
 
                     ScaleTransition grow = new ScaleTransition(Duration.seconds(2.0), emojiLabel);
                     grow.setByX(1.0);
@@ -285,7 +298,6 @@ public class ChatController {
                     fadeEmoji.setToValue(0.0);
                     fadeEmoji.setOnFinished(e -> floatingStage.close());
 
-                    shiver.play();
                     grow.play();
                     fadeEmoji.play();
                     break;
