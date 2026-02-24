@@ -283,8 +283,8 @@ public class ChatController {
                         emojiLabel.setStyle(baseFont + """
                             -fx-font-size: 150px;
                             -fx-padding: 100px;
-                            -fx-text-fill: linear-gradient(to bottom right, rgba(255, 240, 180, 0.95), rgba(255, 130, 160, 0.8));
-                            -fx-effect: dropshadow(gaussian, rgba(255, 190, 100, 0.6), 35, 0.2, 0, 5);
+                            -fx-text-fill: linear-gradient(to bottom right, rgba(255, 230, 175, 0.95), rgba(255, 125, 150, 0.8));
+                            -fx-effect: dropshadow(gaussian, rgba(255, 175, 100, 0.6), 35, 0.2, 0, 5);
                             """);
                     }
 
@@ -304,7 +304,7 @@ public class ChatController {
 
                 case "😡":
                     emojiLabel.setStyle(baseFont + """
-                            -fx-font-size: 150px;
+                            -fx-font-size: 180px;
                             -fx-padding: 100px;
                             -fx-text-fill: linear-gradient(to bottom right, rgba(255, 100, 130, 0.95), rgba(235, 40, 70, 0.85));
                             -fx-effect: dropshadow(gaussian, rgba(255, 60, 90, 0.5), 30, 0.15, 0, 0);
@@ -324,8 +324,18 @@ public class ChatController {
                     fadeAngry.play();
                     break;
 
+                case "😌":
                 default:
-                    emojiLabel.setStyle(baseFont + "-fx-font-size: 150px; -fx-padding: 100px;");
+                    if(emoji.equals("😌")){
+                        emojiLabel.setStyle(baseFont + """
+                            -fx-font-size: 180px;
+                            -fx-padding: 100px;
+                            -fx-text-fill: linear-gradient(to bottom right, rgba(255, 250, 210, 0.95), rgba(230, 190, 100, 0.8));
+                            -fx-effect: dropshadow(gaussian, rgba(240, 200, 110, 0.5), 40, 0.1, 0, 5);
+                            """);
+                    } else {
+                        emojiLabel.setStyle(baseFont + "-fx-font-size: 150px; -fx-padding: 100px;");
+                    }
 
                     FadeTransition fadeDefault = new FadeTransition(Duration.seconds(2.0), emojiLabel);
                     fadeDefault.setFromValue(1.0);
