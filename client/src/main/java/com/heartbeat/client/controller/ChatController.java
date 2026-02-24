@@ -262,6 +262,34 @@ public class ChatController {
                     fadeHeart.play();
                     break;
 
+                case "😭":
+                    emojiLabel.setStyle(baseFont + """
+                            -fx-font-size: 150px;
+                            -fx-padding: 100px;
+                            -fx-text-fill: linear-gradient(to bottom right, rgba(200, 240, 255, 0.95), rgba(90, 180, 255, 0.7));
+                            -fx-effect: dropshadow(gaussian, rgba(90, 170, 255, 0.5), 35, 0.1, 0, 5);
+                            """);
+
+                    TranslateTransition shiver = new TranslateTransition(Duration.millis(150), emojiLabel);
+                    shiver.setByX(4); // Трохи зсувається вбік
+                    shiver.setAutoReverse(true);
+                    shiver.setCycleCount(10);
+
+                    ScaleTransition grow = new ScaleTransition(Duration.seconds(2.0), emojiLabel);
+                    grow.setByX(1.0);
+                    grow.setByY(1.0);
+
+                    FadeTransition fadeEmoji = new FadeTransition(Duration.seconds(0.8), emojiLabel);
+                    fadeEmoji.setDelay(Duration.seconds(0.6));
+                    fadeEmoji.setFromValue(1.0);
+                    fadeEmoji.setToValue(0.0);
+                    fadeEmoji.setOnFinished(e -> floatingStage.close());
+
+                    shiver.play();
+                    grow.play();
+                    fadeEmoji.play();
+                    break;
+
                 default:
                     emojiLabel.setStyle(baseFont + "-fx-font-size: 150px;");
 
