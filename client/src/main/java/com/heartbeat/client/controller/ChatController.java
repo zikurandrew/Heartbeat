@@ -26,9 +26,11 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import javafx.animation.FadeTransition;
 import javafx.scene.image.ImageView;
-
 import javafx.scene.input.MouseEvent;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class ChatController {
 
@@ -115,7 +117,7 @@ public class ChatController {
             case CHAT -> {
                 dotsAnimation.stop();
                 fadeAnimation.stop();
-                addMessageBubble(msg.getSender(), msg.getContent(), false);
+                addMessageBubble(msg.getSender(), msg.getContent(), false, msg.getTimestamp());
             }
             case SYSTEM -> {
                 String content = msg.getContent();
@@ -157,7 +159,7 @@ public class ChatController {
             }
             case HISTORY -> {
                 boolean isMe = msg.getSender().equals(ClientConnection.getUsername());
-                addMessageBubble(msg.getSender(), msg.getContent(), isMe);
+                addMessageBubble(msg.getSender(), msg.getContent(), isMe, msg.getTimestamp());
             }
         }
     }
@@ -169,7 +171,7 @@ public class ChatController {
 
         ClientConnection.send(new Message(MessageType.CHAT, null, text));
 
-        addMessageBubble("Me", text, true);
+        addMessageBubble("Me", text, true, System.currentTimeMillis());
         messageField.clear();
     }
 
@@ -203,31 +205,51 @@ public class ChatController {
         });
     }
 
+    private String formatTime(long timestamp) {
+        if (timestamp == 0) return "";
+        return Instant.ofEpochMilli(timestamp)
+                .atZone(ZoneId.systemDefault())
+                .toLocalTime()
+                .format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
     // --- UI Методи ---
 
-    private void addMessageBubble(String sender, String text, boolean isMe) {
+    private void addMessageBubble(String sender, String text, boolean isMe, long timestamp) {
         HBox container = new HBox();
         container.setAlignment(isMe ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
         container.setPadding(new Insets(5, 20, 5, 20));
 
-        Label bubble = new Label(text);
-        bubble.setWrapText(true);
+        Label textLabel = new Label(text);
+        textLabel.setWrapText(true);
+        textLabel.setStyle("-fx-text-fill: " + (isMe ? "white;" : "#444444;") + " -fx-font-size: 14px;");
+        textLabel.maxWidthProperty().bind(chatScroll.widthProperty().multiply(0.65));
+
+        Label timeLabel = new Label(formatTime(timestamp));
+        timeLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: " + (isMe ? "rgba(255,255,255,0.7);" : "rgba(0,0,0,0.4);"));
+
+        HBox timeBox = new HBox(timeLabel);
+        timeBox.setAlignment(Pos.BOTTOM_RIGHT);
+        // щоб час не відривався далеко від тексту
+        timeBox.setPadding(new Insets(2, 0, 0, 10));
+
+        VBox bubble = new VBox();
+        bubble.getChildren().addAll(textLabel, timeBox);
         bubble.getStyleClass().add(isMe ? "bubble-me" : "bubble-other");
+        bubble.setPadding(new Insets(8, 12, 6, 12));
 
-        bubble.maxWidthProperty().bind(chatScroll.widthProperty().multiply(0.75));
+        VBox messageLayout = new VBox(2);
+        messageLayout.setAlignment(isMe ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
 
-        VBox content = new VBox();
         if (!isMe) {
             Label nameLbl = new Label(sender);
             nameLbl.getStyleClass().add("sender-name");
-            content.getChildren().add(nameLbl);
-            content.setAlignment(Pos.CENTER_LEFT);
-        } else {
-            content.setAlignment(Pos.CENTER_RIGHT);
+            nameLbl.setPadding(new Insets(0, 0, 2, 8));
+            messageLayout.getChildren().add(nameLbl);
         }
 
-        content.getChildren().add(bubble);
-        container.getChildren().add(content);
+        messageLayout.getChildren().add(bubble);
+        container.getChildren().add(messageLayout);
 
         chatBox.getChildren().add(container);
     }
@@ -501,6 +523,7 @@ public class ChatController {
             typingLabel.setText("online");
             if(dotsAnimation != null) dotsAnimation.stop();
             if(fadeAnimation != null) fadeAnimation.stop();
+            typingLabel.setOpacity(1.0);
         });
 
     }

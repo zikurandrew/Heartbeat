@@ -108,16 +108,18 @@ Label {
 
 .bubble-me {
     -fx-background-color: #93689E;
-    -fx-background-radius: 18 18 0 18;
+    -fx-background-radius: 16 16 2 16;
     -fx-text-fill: white;
     -fx-padding: 10 15;
     -fx-font-size: 14px;
+    -fx-min-width: 60px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 1, 1);
 }
 
 .bubble-other {
     -fx-background-color: white;
-    -fx-background-radius: 18 18 18 0;
+    -fx-background-radius: 16 16 16 2;
+    -fx-min-width: 60px;
     -fx-text-fill: #333;
     -fx-padding: 10 15;
     -fx-font-size: 14px;
@@ -125,7 +127,7 @@ Label {
 }
 
 .sender-name {
-    -fx-font-size: 10px;
+    -fx-font-size: 11px;
     -fx-text-fill: #555;
     -fx-padding: 0 0 2 5;
     -fx-font-weight: bold;
