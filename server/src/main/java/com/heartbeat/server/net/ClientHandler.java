@@ -108,8 +108,15 @@ public class ClientHandler implements Runnable {
 
 
                     case UNPAIR -> {
-                        if (PairManager.getRoom(session) != null) {
+                        PairRoom currentRoom = PairManager.getRoom(session);
+                        if (currentRoom != null) {
+                            ClientSession partner = (currentRoom.getA() == session) ? currentRoom.getB() : currentRoom.getA();
+
                             PairManager.leave(session);
+
+                            if (partner != null) {
+                                partner.send(new Message(MessageType.SYSTEM, "server", "UNPAIR"));
+                            }
                         }
                     }
                 }
@@ -118,6 +125,14 @@ public class ClientHandler implements Runnable {
         } catch (Exception e) {
             System.out.println("Client disconnected: " + e.getMessage());
         } finally {
+            // Перед виходом перевіряємо, чи був користувач у парі
+            PairRoom currentRoom = PairManager.getRoom(session);
+            if (currentRoom != null) {
+                ClientSession partner = (currentRoom.getA() == session) ? currentRoom.getB() : currentRoom.getA();
+                if (partner != null) {
+                    partner.send(new Message(MessageType.SYSTEM, "server", "DISCONNECTED"));
+                }
+            }
             PairManager.leave(session);
             if (session != null) session.close();
         }

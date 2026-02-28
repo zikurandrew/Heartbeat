@@ -120,19 +120,25 @@ public class ChatController {
             case SYSTEM -> {
                 String content = msg.getContent();
 
-                if (content != null && content.startsWith("PAIRED")) {
-
-                    leftHeader.setVisible(true);
-                    leftHeader.setManaged(true);
-                    rightHeader.setVisible(true);
-                    rightHeader.setManaged(true);
-
-                    waitingLabel.setVisible(false);
-                    waitingLabel.setManaged(false);
-
-                }
-
                 if (content != null) {
+                    if (content.startsWith("PAIRED")) {
+                        leftHeader.setVisible(true);
+                        leftHeader.setManaged(true);
+                        rightHeader.setVisible(true);
+                        rightHeader.setManaged(true);
+                        waitingLabel.setVisible(false);
+                        waitingLabel.setManaged(false);
+                    }
+                    else if (content.equals("UNPAIR") || content.equals("DISCONNECTED")) {
+                        leftHeader.setVisible(false);
+                        leftHeader.setManaged(false);
+                        rightHeader.setVisible(false);
+                        rightHeader.setManaged(false);
+                        waitingLabel.setVisible(true);
+                        waitingLabel.setManaged(true);
+                        waitingLabel.setText("Lovely left...");
+                    }
+
                     addSystemLabel(content);
                 }
             }
