@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -25,6 +26,8 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import javafx.animation.FadeTransition;
 import javafx.scene.image.ImageView;
+
+import javafx.scene.input.MouseEvent;
 import java.io.IOException;
 
 public class ChatController {
@@ -57,7 +60,6 @@ public class ChatController {
     private Timeline dotsAnimation;
     private FadeTransition fadeAnimation;
     private HBox emojiMenu;
-    private PauseTransition hideMenuTimer;
     private final Gson gson = new Gson();
     private boolean running = true;
 
@@ -75,7 +77,7 @@ public class ChatController {
         chatBox.heightProperty().addListener((obs, oldVal, newVal) -> chatScroll.setVvalue(1.0));
 
         typingAnimation();
-        createHoverEmojiMenu();
+        createEmojiMenu();
 
         messageField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.isEmpty()) {
@@ -168,13 +170,6 @@ public class ChatController {
     @FXML
     private void onPair() {
         ClientConnection.send(new Message(MessageType.PAIR, null, ""));
-    }
-
-    @FXML
-    private void onEmoji() {
-        String emoji = "♥";
-        ClientConnection.send(new Message(MessageType.EMOJI, null, emoji));
-        showEmojiAnimation(emoji);
     }
 
     @FXML
@@ -361,7 +356,7 @@ public class ChatController {
         });
     }
 
-    private void createHoverEmojiMenu(){
+    private void createEmojiMenu(){
         emojiMenu = new HBox(12);
         emojiMenu.setStyle("""
             -fx-background-color: rgba(255, 255, 255, 0.75);
@@ -395,7 +390,6 @@ public class ChatController {
             lbl.setOnMouseClicked(e ->{
                 ClientConnection.send(new Message(MessageType.EMOJI, null, em));
                 showEmojiAnimation(em);
-                hideMenuTimer.playFromStart();
             });
 
             emojiMenu.getChildren().add(lbl);
@@ -403,17 +397,36 @@ public class ChatController {
 
         emojiLayer.getChildren().add(emojiMenu);//меню на прозорий шар
 
-        hideMenuTimer = new PauseTransition(Duration.millis(300));
-        hideMenuTimer.setOnFinished(e -> hideEmojiMenuAnimation());
+        emojiButton.setOnMouseClicked(e ->{
+            if(emojiMenu.isVisible() && emojiMenu.getOpacity() == 1.0){
+                hideEmojiMenuAnimation();
+            } else {
+                showEmojiMenuAnimation();
+            }
+        });
 
-        emojiButton.setOnMouseEntered(e -> showEmojiMenuAnimation());//відкриття при наведені
+        Platform.runLater(() ->{
+            if(emojiButton.getScene() != null){
+                emojiButton.getScene().addEventFilter(MouseEvent.MOUSE_PRESSED, event ->{ //слухач кліків
+                    if(emojiMenu.isVisible() && emojiMenu.getOpacity() > 0){
+                        Node clickedNode = (Node) event.getTarget();
 
-        emojiButton.setOnMouseExited(e -> hideMenuTimer.playFromStart());//якщо мишка зійшла ховаємо
+                        if(!isNodeInside(clickedNode, emojiMenu) && !isNodeInside(clickedNode, emojiButton)){
+                            hideEmojiMenuAnimation();
+                        }
+                    }
+                });
+            }
+        });
 
-        emojiMenu.setOnMouseEntered(e -> hideMenuTimer.stop());//якщо мишка зайшла в меню зупиняємо таймер
+    }
 
-        emojiMenu.setOnMouseExited(e -> hideMenuTimer.playFromStart()); //якщо мишка зійшла знову ставимо таймер
-
+    private boolean isNodeInside(Node node, Node parent){
+        while (node != null){
+            if(node == parent) return true;
+            node = node.getParent();
+        }
+        return false;
     }
 
     private void showEmojiMenuAnimation(){
