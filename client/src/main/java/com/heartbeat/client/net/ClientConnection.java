@@ -22,9 +22,21 @@ public class ClientConnection {
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
+    public static void register(String username, String password) {
+        send(new Message(MessageType.REGISTER, username, password));
+    }
+
     public static void login(String username, String password) {
         currentUsername = username;
         send(new Message(MessageType.LOGIN, username, password));
+    }
+
+    public static Message waitResponse() throws Exception {
+        String line = in.readLine();
+        if (line != null) {
+            return new Gson().fromJson(line, Message.class);
+        }
+        return null;
     }
 
     public static void send(Message message) {

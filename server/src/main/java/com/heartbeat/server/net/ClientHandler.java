@@ -46,6 +46,7 @@ public class ClientHandler implements Runnable {
                     case REGISTER -> {
                         try {
                             User user = authService.register(message.getSender(), message.getContent());
+                            session.setUserId(user.getUsername());
                             session.send(new Message(MessageType.SYSTEM, "server", "REGISTER_OK"));
                         } catch (ServiceException e) {
                             session.send(new Message(MessageType.SYSTEM, "server", "REGISTER_FAIL: " + e.getMessage()));

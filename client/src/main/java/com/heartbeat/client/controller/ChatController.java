@@ -191,6 +191,12 @@ public class ChatController {
         ClientConnection.send(new Message(MessageType.MOOD, null, moodText));
     }
 
+    public void handleInitialMessage(String type) {
+        Platform.runLater(() -> {
+            addSystemLabel(type);
+        });
+    }
+
     // --- UI Методи ---
 
     private void addMessageBubble(String sender, String text, boolean isMe) {
@@ -499,10 +505,21 @@ public class ChatController {
         if (text.equals("LOGIN_OK")) {
             displayText = "✨ You entered heartbeat";
             cssStyle = """
-                -fx-background-color: rgba(175, 143, 189, 0.15); 
-                -fx-text-fill: #93689E; 
-                -fx-padding: 6 15 6 15; 
-                -fx-background-radius: 20; 
+                -fx-background-color: rgba(175, 143, 189, 0.15);
+                -fx-text-fill: #93689E;
+                -fx-padding: 6 15 6 15;
+                -fx-background-radius: 20;
+                -fx-font-size: 11px;
+                -fx-font-weight: bold;
+            """;
+        }
+        else if (text.equals("REGISTER_OK")) {
+            displayText = "🎉 Registration successful";
+            cssStyle = """
+                -fx-background-color: rgba(175, 143, 189, 0.15);
+                -fx-text-fill: #93689E;
+                -fx-padding: 6 15 6 15;
+                -fx-background-radius: 20;
                 -fx-font-size: 11px;
                 -fx-font-weight: bold;
             """;
