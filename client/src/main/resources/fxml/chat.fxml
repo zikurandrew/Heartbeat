@@ -14,7 +14,7 @@
             <BorderPane styleClass="chat-header">
 
                 <center>
-                    <Label fx:id="waitingLabel" text="You are not in the room yet, press PAIR" />
+                    <Label fx:id="waitingLabel" text="%chat.waiting" />
                 </center>
 
                 <left>
@@ -27,21 +27,24 @@
 
                         <VBox alignment="CENTER_LEFT" spacing="2" minHeight="42">
                             <HBox spacing="4" alignment="CENTER_LEFT">
-                                <Label text="Partner's mood: " />
-                                <Label fx:id="moodLabel" text=" "/>
+                                <Label fx:id="moodLabel" text="%chat.partner.mood" />
                             </HBox>
 
-                            <Label fx:id="typingLabel" text="online"  />
+                            <Label fx:id="typingLabel" text="%chat.online"  />
                         </VBox>
                     </HBox>
                 </left>
 
                 <right>
-                    <HBox fx:id="rightHeader" spacing="10" alignment="CENTER_RIGHT">
-                        <Button text="&#128516;" onAction="#onGood" styleClass="icon-button"/>
-                        <Button text="&#128528;" onAction="#onNeutral" styleClass="icon-button"/>
-                        <Button text="&#128542;" onAction="#onBad" styleClass="icon-button"/>
-                    </HBox>
+                    <VBox alignment="CENTER_RIGHT" spacing="5">
+                        <ComboBox fx:id="languageBox" styleClass="lang-box" />
+
+                        <HBox fx:id="rightHeader" spacing="10" alignment="CENTER_RIGHT">
+                            <Button text="&#128516;" onAction="#onGood" styleClass="icon-button"/>
+                            <Button text="&#128528;" onAction="#onNeutral" styleClass="icon-button"/>
+                            <Button text="&#128542;" onAction="#onBad" styleClass="icon-button"/>
+                        </HBox>
+                    </VBox>
                 </right>
 
             </BorderPane>
@@ -59,11 +62,11 @@
         <bottom>
                 <HBox spacing="10" styleClass="input-container" alignment="CENTER">
                     <TextField fx:id="messageField"
-                               promptText="Type a message..."
+                               promptText="%input.prompt"
                                HBox.hgrow="ALWAYS"
                                onAction="#onSend" />
                     <Button fx:id="emojiButton" text="♥" styleClass="icon-button"/>
-                    <Button text="PAIR" onAction="#onPair" styleClass="icon-button"/>
+                    <Button fx:id="pairButton" text="%button.pair" onAction="#onPair" styleClass="icon-button"/>
                     <Button text="➤" onAction="#onSend" styleClass="send-button" minWidth="45"/>
                 </HBox>
         </bottom>

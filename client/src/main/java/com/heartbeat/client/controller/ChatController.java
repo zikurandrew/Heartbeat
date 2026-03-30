@@ -31,6 +31,9 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ResourceBundle;
+import java.util.Locale;
+import javafx.scene.control.ComboBox;
 
 public class ChatController {
 
@@ -48,6 +51,12 @@ public class ChatController {
     private Label typingLabel;
     @FXML
     private Label moodLabel;
+    @FXML
+    private ResourceBundle resources;
+    @FXML
+    private ComboBox<String> languageBox;
+    @FXML
+    private Button pairButton;
     @FXML
     private ImageView avatarImage;
     @FXML
@@ -67,6 +76,10 @@ public class ChatController {
 
     @FXML
     public void initialize() {
+        languageBox.getItems().addAll("English", "Українська");
+        languageBox.setValue(resources.getLocale().getLanguage().equals("uk") ? "Українська" : "English");
+        languageBox.setOnAction(event -> switchLanguage());
+
         javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(21, 21, 21); //горизонталь, вертикаль, радіус
         avatarImage.setClip(clip);
 
@@ -138,14 +151,19 @@ public class ChatController {
                         rightHeader.setManaged(false);
                         waitingLabel.setVisible(true);
                         waitingLabel.setManaged(true);
-                        waitingLabel.setText("Lovely left...");
+                        waitingLabel.setText(resources.getString("sys.lovely.left"));
                     }
 
                     addSystemLabel(content);
                 }
             }
             case EMOJI -> showEmojiAnimation(msg.getContent());
-            case MOOD -> moodLabel.setText(msg.getContent());
+            case MOOD -> {
+                Platform.runLater(() -> {
+                    moodLabel.setUserData(msg.getContent());
+                    updateMoodDisplay(msg.getContent());
+                });
+            }
             case TYPING -> {
                 Platform.runLater(() ->{
 
@@ -182,17 +200,17 @@ public class ChatController {
 
     @FXML
     private void onGood(){
-        sendMood("good");
+        sendMood("GOOD");
     }
 
     @FXML
     private void onNeutral(){
-        sendMood("neutral");
+        sendMood("NEUTRAL");
     }
 
     @FXML
     private void onBad(){
-        sendMood("bad");
+        sendMood("BAD");
     }
 
     private void sendMood(String moodText){
@@ -205,12 +223,64 @@ public class ChatController {
         });
     }
 
+    private void updateMoodDisplay(String moodKey) {
+        if (moodKey == null) return;
+
+        String prefix = resources.getString("chat.partner.mood") + " ";
+
+        if (moodKey.equals("GOOD")) {
+            moodLabel.setText(prefix + resources.getString("mood.good"));
+        } else if (moodKey.equals("NEUTRAL")) {
+            moodLabel.setText(prefix + resources.getString("mood.neutral"));
+        } else if (moodKey.equals("BAD")) {
+            moodLabel.setText(prefix + resources.getString("mood.bad"));
+        } else {
+            moodLabel.setText(prefix + moodKey);
+        }
+    }
+
     private String formatTime(long timestamp) {
         if (timestamp == 0) return "";
         return Instant.ofEpochMilli(timestamp)
                 .atZone(ZoneId.systemDefault())
                 .toLocalTime()
                 .format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
+    private void switchLanguage() {
+        String selected = languageBox.getValue();
+        Locale locale = selected.equals("Українська") ? new Locale("uk", "UA") : Locale.ENGLISH;
+        resources = ResourceBundle.getBundle("i18n.messages", locale);
+
+        if (waitingLabel.isVisible()) {
+            waitingLabel.setText(resources.getString("chat.waiting"));
+        }
+        moodLabel.setText(resources.getString("chat.partner.mood"));
+
+        if (typingLabel.getText().equals("online") || typingLabel.getText().equals("в мережі")) {
+            typingLabel.setText(resources.getString("chat.online"));
+        }
+
+        messageField.setPromptText(resources.getString("input.prompt"));
+        pairButton.setText(resources.getString("button.pair"));
+
+        // Проходиться по всіх елементах в історії чату
+        for (javafx.scene.Node node : chatBox.getChildren()) {
+            // Шукає системні повідомлення всередині (якщо вони загорнуті в HBox)
+            if (node instanceof javafx.scene.layout.HBox hbox) {
+                for (javafx.scene.Node innerNode : hbox.getChildren()) {
+                    if (innerNode instanceof Label label && label.getUserData() != null) {
+                        // Бере ключ з "бірки" і ставить новий переклад
+                        String key = (String) label.getUserData();
+                        label.setText(resources.getString(key));
+                    }
+                }
+            }
+        }
+
+        if (moodLabel.getUserData() != null) {
+            updateMoodDisplay((String) moodLabel.getUserData());
+        }
     }
 
     // --- UI Методи ---
@@ -501,38 +571,40 @@ public class ChatController {
 
     }
 
-    private void typingAnimation(){
+    private void typingAnimation() {
         //Анімація крапок
         dotsAnimation = new Timeline(
-                new KeyFrame(Duration.ZERO, e -> typingLabel.setText("typing")),
-                new KeyFrame(Duration.seconds(0.4), e -> typingLabel.setText("typing.")),
-                new KeyFrame(Duration.seconds(0.8), e -> typingLabel.setText("typing..")),
-                new KeyFrame(Duration.seconds(1.2), e -> typingLabel.setText("typing...")),
+                new KeyFrame(Duration.ZERO, e -> typingLabel.setText(resources.getString("chat.typing"))),
+                new KeyFrame(Duration.seconds(0.4), e -> typingLabel.setText(resources.getString("chat.typing") + ".")),
+                new KeyFrame(Duration.seconds(0.8), e -> typingLabel.setText(resources.getString("chat.typing") + "..")),
+                new KeyFrame(Duration.seconds(1.2), e -> typingLabel.setText(resources.getString("chat.typing") + "...")),
                 new KeyFrame(Duration.seconds(1.6))
         );
         dotsAnimation.setCycleCount(Animation.INDEFINITE);
 
-        //Анімація пульсації
+        // Анімація пульсації
         fadeAnimation = new FadeTransition(Duration.seconds(1), typingLabel);
         fadeAnimation.setFromValue(0.4);
         fadeAnimation.setToValue(1.0);
         fadeAnimation.setCycleCount(Animation.INDEFINITE);
         fadeAnimation.setAutoReverse(true);
 
-        typingTimer.setOnFinished(event ->{
-            typingLabel.setText("online");
-            if(dotsAnimation != null) dotsAnimation.stop();
-            if(fadeAnimation != null) fadeAnimation.stop();
+        typingTimer.setOnFinished(event -> {
+            typingLabel.setText(resources.getString("chat.online"));
+
+            if (dotsAnimation != null) dotsAnimation.stop();
+            if (fadeAnimation != null) fadeAnimation.stop();
+
             typingLabel.setOpacity(1.0);
         });
-
     }
+
     private void addSystemLabel(String text) {
         String displayText = text;
         String cssStyle = "";
 
         if (text.equals("LOGIN_OK")) {
-            displayText = "✨ You entered heartbeat";
+            displayText = resources.getString("sys.login.ok");
             cssStyle = """
                 -fx-background-color: rgba(175, 143, 189, 0.15);
                 -fx-text-fill: #93689E;
@@ -543,7 +615,7 @@ public class ChatController {
             """;
         }
         else if (text.equals("REGISTER_OK")) {
-            displayText = "🎉 Registration successful";
+            displayText = resources.getString("sys.register.ok");
             cssStyle = """
                 -fx-background-color: rgba(175, 143, 189, 0.15);
                 -fx-text-fill: #93689E;
@@ -553,7 +625,7 @@ public class ChatController {
                 -fx-font-weight: bold;
             """;
         } else if (text.startsWith("PAIRED")) {
-            displayText = "🔗 Connected to lovely";
+            displayText = resources.getString("sys.paired");
             cssStyle = """
                 -fx-background-color: rgba(175, 143, 189, 0.25); 
                 -fx-text-fill: #8A5A9E; 
@@ -564,7 +636,7 @@ public class ChatController {
                 -fx-effect: dropshadow(gaussian, rgba(175,143,189,0.3), 5, 0, 0, 2);
             """;
         } else if (text.equals("UNPAIR") || text.equals("DISCONNECTED")) {
-            displayText = "💔 Lovely disconnected";
+            displayText = resources.getString("sys.unpaired");
             cssStyle = """
                 -fx-background-color: rgba(255, 100, 100, 0.15);
                 -fx-text-fill: #D9534F;
@@ -578,6 +650,11 @@ public class ChatController {
         }
         Label label = new Label(displayText);
         label.setStyle(cssStyle);
+
+        if (text.equals("LOGIN_OK")) label.setUserData("sys.login.ok");
+        else if (text.equals("REGISTER_OK")) label.setUserData("sys.register.ok");
+        else if (text.startsWith("PAIRED")) label.setUserData("sys.paired");
+        else if (text.equals("UNPAIR") || text.equals("DISCONNECTED")) label.setUserData("sys.unpaired");
 
         HBox wrapper = new HBox(label);
         wrapper.setAlignment(Pos.CENTER);

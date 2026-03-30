@@ -9,6 +9,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class AuthController {
 
@@ -85,6 +87,8 @@ public class AuthController {
 
     private void goToChat(String messageContent) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/chat.fxml"));
+        ResourceBundle bundle = ResourceBundle.getBundle("i18n.messages", Locale.ENGLISH);
+        loader.setResources(bundle);
         Scene chatScene = new Scene(loader.load(), 800, 600);
 
         ChatController chatController = loader.getController();
