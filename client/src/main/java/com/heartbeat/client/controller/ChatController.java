@@ -16,10 +16,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -65,6 +62,11 @@ public class ChatController {
     private HBox rightHeader;
     @FXML
     private Label waitingLabel;
+    @FXML private StackPane rootPane;
+    @FXML private Region switchBackground;
+    @FXML private StackPane switchThumb;
+    @FXML private Label themeIcon;
+    private boolean isDarkTheme = false;
 
     private final PauseTransition typingTimer = new PauseTransition(Duration.seconds(2));
     private long lastTypingTime = 0;
@@ -280,6 +282,31 @@ public class ChatController {
 
         if (moodLabel.getUserData() != null) {
             updateMoodDisplay((String) moodLabel.getUserData());
+        }
+    }
+
+    @FXML
+    private void onThemeToggle() {
+        isDarkTheme = !isDarkTheme;
+
+        TranslateTransition transition = new TranslateTransition(Duration.millis(300), switchThumb);
+        transition.setToX(isDarkTheme ? 26 : 0);
+        transition.play();
+
+        themeIcon.setText(isDarkTheme ? "🌙" : "☀");
+
+        switchBackground.setStyle(
+                "-fx-background-color: " + (isDarkTheme ? "rgba(30, 20, 40, 0.6)" : "rgba(255,255,255,0.6)") + ";" +
+                        "-fx-background-radius: 14;"
+        );
+
+        try {
+            rootPane.getStylesheets().clear();
+            String cssPath = isDarkTheme ? "/css/dark.css" : "/css/chat.css";
+            rootPane.getStylesheets().add(getClass().getResource(cssPath).toExternalForm());
+        } catch (NullPointerException e) {
+            System.err.println("ПОМИЛКА: Не вдалося знайти файл стилів" +
+                    (isDarkTheme ? "dark.css" : "chat.css") + " у папці resources/css/");
         }
     }
 

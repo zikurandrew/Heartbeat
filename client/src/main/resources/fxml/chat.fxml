@@ -4,7 +4,8 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<StackPane xmlns="http://javafx.com/javafx"
+<?import javafx.geometry.Insets?>
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="com.heartbeat.client.controller.ChatController"
            stylesheets="@../css/chat.css">
@@ -36,8 +37,23 @@
                 </left>
 
                 <right>
-                    <VBox alignment="CENTER_RIGHT" spacing="5">
-                        <ComboBox fx:id="languageBox" styleClass="lang-box" />
+                    <VBox alignment="CENTER_RIGHT" spacing="10">
+                        <HBox spacing="15" alignment="CENTER_RIGHT">
+                            <ComboBox fx:id="languageBox" styleClass="lang-box" />
+
+                            <StackPane onMouseClicked="#onThemeToggle" style="-fx-cursor: hand;">
+                                <Region fx:id="switchBackground" prefWidth="54" prefHeight="28" maxWidth="54"
+                                        style="-fx-background-color: rgba(255,255,255,0.6); -fx-background-radius: 14;"/>
+
+                                <StackPane fx:id="switchThumb" maxWidth="24" prefWidth="24" prefHeight="24" StackPane.alignment="CENTER_LEFT">
+                                    <StackPane.margin>
+                                        <Insets left="2" right="2"/>
+                                    </StackPane.margin>
+                                    <Region style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(147,104,158,0.4), 4, 0, 0, 2);" />
+                                    <Label fx:id="themeIcon" text="☀" style="-fx-font-size: 13px;" />
+                                </StackPane>
+                            </StackPane>
+                        </HBox>
 
                         <HBox fx:id="rightHeader" spacing="10" alignment="CENTER_RIGHT">
                             <Button text="&#128516;" onAction="#onGood" styleClass="icon-button"/>
