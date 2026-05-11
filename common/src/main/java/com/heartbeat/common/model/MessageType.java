@@ -19,6 +19,4 @@ public enum MessageType {
 
     // ===== EMOTIONAL SIGNALS =====
     EMOJI,
-    PULSE,
-    ATTENTION
 }

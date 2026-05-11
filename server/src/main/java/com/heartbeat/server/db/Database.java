@@ -16,7 +16,7 @@ public class Database {
 
     // Файл у тій же папці server/
     private static final String DB_FILE = "heartbeat.db";
-    private static final String URL = "jdbc:sqlite:" + DB_FILE;
+    private static final String URL = "jdbc:sqlite:/data/" + DB_FILE;
 
     static {
         try {
