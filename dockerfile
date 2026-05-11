@@ -16,7 +16,7 @@ WORKDIR /app
 
 RUN mkdir -p /data
 
-COPY --from=build /app/server/target/*.jar app.jar
+COPY --from=build /app/server/target/server.jar app.jar
 
 EXPOSE 5000
 
