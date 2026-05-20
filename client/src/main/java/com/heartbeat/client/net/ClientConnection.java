@@ -17,7 +17,7 @@ public class ClientConnection {
     private static String currentUsername;
 
     public static void connect() throws IOException {
-        socket = new Socket("localhost", 5000);
+        socket = new Socket("yamabiko.proxy.rlwy.net", 41689);
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }

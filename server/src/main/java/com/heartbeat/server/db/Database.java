@@ -16,8 +16,10 @@ public class Database {
 
     // Файл у тій же папці server/
     private static final String DB_FILE = "heartbeat.db";
-    private static final String URL = "jdbc:sqlite:/data/" + DB_FILE;
-
+    private static final String DB_PATH = System.getProperty("os.name").toLowerCase().contains("win")
+            ? DB_FILE  // на Windows — поруч з JAR
+            : "/data/" + DB_FILE;  // на Linux (Railway) — у /data/
+    private static final String URL = "jdbc:sqlite:" + DB_PATH;
     static {
         try {
             Class.forName("org.sqlite.JDBC");
