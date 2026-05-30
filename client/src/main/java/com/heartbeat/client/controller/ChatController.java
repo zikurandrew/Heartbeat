@@ -145,6 +145,8 @@ public class ChatController {
                         rightHeader.setManaged(true);
                         waitingLabel.setVisible(false);
                         waitingLabel.setManaged(false);
+                        pairButton.setText(resources.getString("button.paired"));
+                        pairButton.setDisable(true);
                     }
                     else if (content.equals("UNPAIR") || content.equals("DISCONNECTED")) {
                         leftHeader.setVisible(false);
@@ -154,6 +156,8 @@ public class ChatController {
                         waitingLabel.setVisible(true);
                         waitingLabel.setManaged(true);
                         waitingLabel.setText(resources.getString("sys.lovely.left"));
+                        pairButton.setDisable(false);
+                        pairButton.setText(resources.getString("button.pair"));
                     }
 
                     addSystemLabel(content);
@@ -197,6 +201,10 @@ public class ChatController {
 
     @FXML
     private void onPair() {
+        pairButton.setDisable(true);
+
+        pairButton.setText(resources.getString("button.searching"));
+
         ClientConnection.send(new Message(MessageType.PAIR, null, ""));
     }
 
@@ -264,15 +272,19 @@ public class ChatController {
         }
 
         messageField.setPromptText(resources.getString("input.prompt"));
-        pairButton.setText(resources.getString("button.pair"));
 
-        // Проходиться по всіх елементах в історії чату
+        if (leftHeader.isVisible()) {
+            pairButton.setText(resources.getString("button.paired"));
+        } else if (pairButton.isDisable()) {
+            pairButton.setText(resources.getString("button.searching"));
+        } else {
+            pairButton.setText(resources.getString("button.pair"));
+        }
+
         for (javafx.scene.Node node : chatBox.getChildren()) {
-            // Шукає системні повідомлення всередині (якщо вони загорнуті в HBox)
             if (node instanceof javafx.scene.layout.HBox hbox) {
                 for (javafx.scene.Node innerNode : hbox.getChildren()) {
                     if (innerNode instanceof Label label && label.getUserData() != null) {
-                        // Бере ключ з "бірки" і ставить новий переклад
                         String key = (String) label.getUserData();
                         label.setText(resources.getString(key));
                     }
