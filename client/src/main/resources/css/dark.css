@@ -124,7 +124,7 @@ Label {
     -fx-background-color: #261D36;
     -fx-background-radius: 16 16 16 2;
     -fx-min-width: 60px;
-    -fx-text-fill: #E6DCEF;
+    -fx-text-fill: white;
     -fx-padding: 10 15;
     -fx-font-size: 14px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 5, 0, 1, 2);
