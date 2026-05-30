@@ -319,11 +319,11 @@ public class ChatController {
 
         Label textLabel = new Label(text);
         textLabel.setWrapText(true);
-        textLabel.setStyle("-fx-text-fill: " + (isMe ? "white;" : "#444444;") + " -fx-font-size: 14px;");
+        textLabel.getStyleClass().add("bubble-text");
         textLabel.maxWidthProperty().bind(chatScroll.widthProperty().multiply(0.65));
 
         Label timeLabel = new Label(formatTime(timestamp));
-        timeLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: " + (isMe ? "rgba(255,255,255,0.7);" : "rgba(0,0,0,0.4);"));
+        timeLabel.getStyleClass().add("bubble-time");
 
         HBox timeBox = new HBox(timeLabel);
         timeBox.setAlignment(Pos.BOTTOM_RIGHT);

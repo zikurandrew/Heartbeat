@@ -113,21 +113,39 @@ Label {
 .bubble-me {
     -fx-background-color: #6D3D7A;
     -fx-background-radius: 16 16 2 16;
-    -fx-text-fill: white;
     -fx-padding: 10 15;
     -fx-font-size: 14px;
     -fx-min-width: 60px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 5, 0, 1, 2);
 }
 
+.bubble-me .bubble-text {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.bubble-me .bubble-time {
+    -fx-text-fill: rgba(255, 255, 255, 0.7);
+    -fx-font-size: 10px;
+}
+
 .bubble-other {
     -fx-background-color: #261D36;
     -fx-background-radius: 16 16 16 2;
     -fx-min-width: 60px;
-    -fx-text-fill: white;
     -fx-padding: 10 15;
     -fx-font-size: 14px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 5, 0, 1, 2);
+}
+
+.bubble-other .bubble-text {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.bubble-other .bubble-time {
+    -fx-text-fill: rgba(255, 255, 255, 0.8);
+    -fx-font-size: 10px;
 }
 
 .sender-name {
